@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, collection, query, orderBy, where } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, orderBy, where, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '@/lib/firebase/config';
 import toast from 'react-hot-toast';
 import type { Game, Team, Player, Word } from '@/types/firestore';
@@ -139,6 +139,11 @@ export default function GamePage() {
               }
             }
             
+            // If turnStartTime is a Firestore timestamp, convert it
+            if (gameData.turnStartTime && typeof gameData.turnStartTime === 'object' && 'toMillis' in gameData.turnStartTime) {
+              gameData.turnStartTime = (gameData.turnStartTime as any).toMillis();
+            }
+            
             setError(null);
           } else {
             setError("Game not found.");
@@ -180,6 +185,71 @@ export default function GamePage() {
     fetchGameData();
   }, [gameId, playerId, router]);
   
+  // Effect to sync timer with game state
+  useEffect(() => {
+    if (!game?.turnStartTime) {
+      // If no turnStartTime is available, set a default timer
+      setTimeLeft(60);
+      setIsTimerRunning(false);
+      return;
+    }
+
+    // Calculate time left based on turnStartTime
+    const calculateTimeLeft = () => {
+      const now = Date.now();
+      const turnStart = game.turnStartTime || now; // Default to now if turnStartTime is null
+      const elapsed = Math.floor((now - turnStart) / 1000);
+      const remaining = Math.max(0, 60 - elapsed);
+      return remaining;
+    };
+
+    // Initial calculation
+    const initialTimeLeft = calculateTimeLeft();
+    setTimeLeft(initialTimeLeft);
+    setIsTimerRunning(initialTimeLeft > 0);
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    // Start new timer if there's time left
+    if (initialTimeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        const remaining = calculateTimeLeft();
+        setTimeLeft(remaining);
+
+        if (remaining <= 0) {
+          clearInterval(timerRef.current!);
+          setIsTimerRunning(false);
+          if (isDescriber) {
+            handleTimeUp();
+          }
+        }
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [game?.turnStartTime, isDescriber]);
+  
+  // Function to start the timer
+  const startTimer = async () => {
+    // Update turnStartTime in Firebase
+    try {
+      const gameRef = doc(db, "games", gameId);
+      await updateDoc(gameRef, {
+        turnStartTime: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error starting timer:", error);
+      toast.error("Failed to start timer");
+    }
+  };
+  
   // Effect to get a new word when the active player changes or when a word is guessed/skipped
   useEffect(() => {
     const getNewWord = async () => {
@@ -190,7 +260,7 @@ export default function GamePage() {
           setCurrentWord(word);
           
           // Start the timer when a new word is fetched
-          startTimer();
+          await startTimer();
         } catch (error) {
           console.error("Error getting random word:", error);
           toast.error("Failed to get a word");
@@ -200,29 +270,6 @@ export default function GamePage() {
     
     getNewWord();
   }, [gameId, game?.currentRound, isDescriber, currentWord]);
-  
-  // Function to start the timer
-  const startTimer = () => {
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
-    setTimeLeft(60); // Reset to 60 seconds
-    setIsTimerRunning(true);
-    
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          // Time's up - clear interval and handle end of turn
-          clearInterval(timerRef.current!);
-          handleTimeUp();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
   
   // Handle time up - advance to next team
   const handleTimeUp = async () => {
@@ -361,19 +408,6 @@ export default function GamePage() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left column: Timer and Word display */}
         <div className="w-full lg:w-2/3 flex flex-col">
-          {/* Timer */}
-          <Card className="mb-6" title="Timer">
-            <Timer seconds={timeLeft} totalSeconds={60} />
-          </Card>
-          
-          {/* Current Turn Info */}
-          <CurrentTurnInfo 
-            teamName={getActiveTeamName()}
-            playerName={getActivePlayerName()}
-            isCurrentPlayer={isDescriber}
-            className="mb-6"
-          />
-          
           {/* Word Card with unified component */}
           <WordCard 
             isDescriber={isDescriber}
@@ -384,6 +418,18 @@ export default function GamePage() {
             onSkip={handleSkip}
             isCorrectGuessProcessing={isCorrectGuessProcessing}
             isSkipProcessing={isSkipProcessing}
+            seconds={timeLeft}
+            totalSeconds={60}
+            className="mb-6"
+          />
+          
+          {/* Current Turn Info */}
+          <CurrentTurnInfo 
+            teamName={getActiveTeamName()}
+            playerName={getActivePlayerName()}
+            isCurrentPlayer={isDescriber}
+            seconds={timeLeft}
+            totalSeconds={60}
             className="mb-6"
           />
         </div>

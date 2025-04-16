@@ -10,6 +10,7 @@ export interface Game {
   activePlayerId: string | null; // ID of the player whose turn it is within the active team
   turnOrder: string[]; // Array of team IDs in the order they take turns
   createdAt: Date; // Or Firebase Timestamp
+  turnStartTime?: number | null; // Timestamp when the current turn started
   // Potentially add hostId if needed for specific controls
 }
 

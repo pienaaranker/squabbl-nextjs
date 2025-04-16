@@ -365,6 +365,7 @@ export async function startGame(gameId: string): Promise<void> {
       turnOrder: shuffledTeamIds,
       activeTeamId,
       activePlayerId,
+      turnStartTime: serverTimestamp()
     };
     console.log("Update data:", updateData);
     
@@ -499,7 +500,8 @@ export async function advanceToNextTeam(gameId: string): Promise<void> {
     // 6. Update game state
     await updateDoc(gameRef, {
       activeTeamId: nextTeamId,
-      activePlayerId: nextActivePlayerId
+      activePlayerId: nextActivePlayerId,
+      turnStartTime: serverTimestamp()
     });
     
     console.log(`Advanced turn to team ${nextTeamId}, player ${nextActivePlayerId}`);
@@ -555,7 +557,8 @@ export async function advanceToNextRound(gameId: string): Promise<void> {
       state: nextRoundState,
       currentRound: nextRound,
       activeTeamId: firstTeamId,
-      activePlayerId: nextActivePlayerId
+      activePlayerId: nextActivePlayerId,
+      turnStartTime: serverTimestamp()
     });
     
     console.log(`Advanced to round ${nextRound}`);
