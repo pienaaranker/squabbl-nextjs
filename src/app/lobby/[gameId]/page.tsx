@@ -8,11 +8,15 @@ import type { Game, Team, Player, Word } from '@/types/firestore'; // Import Gam
 import { addTeamToGame, updatePlayerTeam, addWord, removeWord, addAIWords, getPlayerWords, startGame, addPlayerToGame } from '@/lib/firebase/gameService'; // Import functions
 import { GameVerificationService } from '@/lib/firebase/gameVerificationService'; // Import verification service
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { pageVariants, cardVariants, listItemVariants, springs } from '@/lib/animations';
 import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';
 import Badge from '@/app/components/Badge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
+import { Grid } from '@/app/components/layouts/Grid';
+import { AnimatedIcon } from '@/app/components/ui';
 
 export default function LobbyPage() {
   const params = useParams<{ gameId: string }>();
@@ -401,25 +405,56 @@ export default function LobbyPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-softwhite">
-        <LoadingSpinner size="lg" text="Loading game details..." />
-      </div>
+      <motion.div
+        className="min-h-screen bg-background"
+        variants={pageVariants}
+        initial="initial"
+        animate="enter"
+        exit="exit"
+      >
+        <div className="container mx-auto py-8 px-4">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <LoadingSpinner size="lg" />
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 text-lg text-neutral-dark"
+            >
+              Loading game...
+            </motion.p>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-softwhite">
-        <Card className="max-w-md w-full">
-          <p className="text-xl text-red-600 mb-4">{error}</p>
-          <Button 
-            onClick={() => router.push('/')}
-            fullWidth
-          >
-            Return Home
-          </Button>
-        </Card>
-      </div>
+      <motion.div
+        className="min-h-screen bg-background"
+        variants={pageVariants}
+        initial="initial"
+        animate="enter"
+        exit="exit"
+      >
+        <div className="container mx-auto py-8 px-4">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <AnimatedIcon
+              icon="⚠️"
+              color="coral"
+              size="xl"
+              animation="wiggle"
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 text-lg text-red-500"
+            >
+              {error}
+            </motion.p>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 
@@ -440,453 +475,266 @@ export default function LobbyPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 md:p-8 bg-softwhite bg-[url('/images/confetti-pattern.svg')] bg-opacity-50">
-      <main className="flex flex-col items-center gap-6 p-6 md:p-8 bg-white shadow-2xl rounded-lg w-full max-w-3xl border-t-4 border-coral-500 relative">
-        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-coral-500 text-white py-2 px-6 rounded-t-xl shadow-md text-xl font-bold">
-          SQUABBL
-        </div>
-        
-        <div className="w-full flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-slate-800 mt-2 flex items-center">
-            <span className="mr-2">Game Lobby</span>
-            <span className="animate-pulse text-sunny-500">🎮</span>
-          </h1>
-          
-          {/* Debug Player ID Badge - Only shown if player has joined */}
-          {playerId && (
-            <div className="bg-gray-100 border border-gray-300 text-xs p-2 rounded-md">
-              <div><strong>Debug Info:</strong></div>
-              <div><strong>Player:</strong> {players.find(p => p.id === playerId)?.name || 'Unknown'}</div>
-              <div><strong>ID:</strong> <span className="font-mono">{playerId.substring(0, 8) || 'None'}</span></div>
-              <div><strong>Host:</strong> {isHost ? 'Yes' : 'No'}</div>
-              <div><strong>Team:</strong> {teams.find(t => t.id === players.find(p => p.id === playerId)?.teamId)?.name || 'None'}</div>
-            </div>
-          )}
-        </div>
-        
-        <p className="text-lg text-slate-800 bg-sky-100 py-1 px-3 rounded-md">Game ID: <code className="font-mono bg-white px-2 py-1 rounded">{gameId}</code></p>
-
-        {/* SCENARIO 1: Game in progress, no player ID (new player) - Show "can't join" message */}
-        {!playerId && game && game.state !== 'lobby' && (
-          <Card className="w-full bg-gradient-to-r from-red-100 to-white border-l-4 border-red-500 mb-4">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="text-6xl">🚫</div>
-              <h2 className="text-2xl font-bold text-slate-800">Game Already in Progress</h2>
-              <p className="text-slate-800">Sorry, this game has already started and is not accepting new players.</p>
-              <Button 
-                onClick={() => router.push('/')}
-                variant="primary"
-                className="mt-4"
-                leftIcon={<span>🏠</span>}
-              >
-                Return to Home Page
-              </Button>
+    <motion.div
+      className="min-h-screen bg-background"
+      variants={pageVariants}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+    >
+      <div className="container mx-auto py-8 px-4">
+        <Grid columns={1} gap="lg" animate>
+          {/* Game Info Section */}
+          <Card className="w-full">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-6">
+              <div className="flex items-center gap-4">
+                <AnimatedIcon
+                  icon="🎮"
+                  color="sky"
+                  size="lg"
+                  animation="bounce"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold font-poppins">Game Lobby</h1>
+                  <p className="text-neutral-dark">Share code: {game?.code}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareableLink);
+                    toast.success('Link copied to clipboard!');
+                  }}
+                  leftIcon={<span>📋</span>}
+                >
+                  Copy Invite Link
+                </Button>
+                {isHost && (
+                  <Button
+                    variant="primary"
+                    onClick={handleStartGame}
+                    isLoading={isStartingGame}
+                    disabled={!canStart || isStartingGame}
+                    leftIcon={<span>🎲</span>}
+                  >
+                    Start Game
+                  </Button>
+                )}
+              </div>
             </div>
           </Card>
-        )}
 
-        {/* SCENARIO 2: Game in lobby, no player ID (new player) - Show join form and game overview */}
-        {!playerId && game && game.state === 'lobby' && (
-          <>
-            {/* Join Form */}
-            <Card title="Join This Game" className="w-full bg-gradient-to-r from-coral-100 to-white border-l-4 border-coral-500 mb-4" icon={<span className="text-xl">🎯</span>}>
-              <form onSubmit={handleDirectJoin} className="w-full">
-                <div className="flex flex-col space-y-4">
-                  <p className="text-slate-800">Enter your name to join this game!</p>
-                  
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newPlayerName}
-                      onChange={(e) => setNewPlayerName(e.target.value)}
-                      placeholder="Your name"
-                      className="flex-1 p-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-300 bg-softwhite"
-                      disabled={joining}
-                    />
-                    <Button
-                      type="submit"
-                      disabled={joining || !newPlayerName.trim()}
-                      isLoading={joining}
-                      loadingText="Joining..."
-                      leftIcon={<span>👋</span>}
-                    >
-                      Join Game
-                    </Button>
-                  </div>
-                  
-                  {joinError && (
-                    <p className="text-red-600 text-sm">{joinError}</p>
-                  )}
-                </div>
-              </form>
-            </Card>
-
-            {/* Game Overview */}
-            <Card title="Game Overview" className="w-full bg-gradient-to-r from-sky-100 to-white border-l-4 border-sky-500">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-mint-100 p-4 rounded-lg text-center flex flex-col items-center">
-                  <span className="text-2xl mb-2">🏆</span>
-                  <span className="text-xl font-bold text-slate-800">{teams.length}</span>
-                  <span className="text-sm text-slate-800">Teams</span>
-                </div>
-                
-                <div className="bg-coral-100 p-4 rounded-lg text-center flex flex-col items-center">
-                  <span className="text-2xl mb-2">👥</span>
-                  <span className="text-xl font-bold text-slate-800">{players.length}</span>
-                  <span className="text-sm text-slate-800">Players</span>
-                </div>
-                
-                <div className="bg-sunny-100 p-4 rounded-lg text-center flex flex-col items-center">
-                  <span className="text-2xl mb-2">🎲</span>
-                  <span className="text-xl font-bold text-slate-800">{allWordsCount}</span>
-                  <span className="text-sm text-slate-800">Words</span>
-                </div>
+          {/* Teams Section */}
+          <Card className="w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold font-poppins">Teams</h2>
+                <Button
+                  variant="accent"
+                  onClick={() => setIsAddingTeam(true)}
+                  leftIcon={<span>👥</span>}
+                >
+                  Add Team
+                </Button>
               </div>
               
-              <div className="mt-6 text-center">
-                <p className="text-slate-800 mb-4">Join this game to participate, add words, and be part of a team!</p>
-                <div className="flex justify-center flex-col items-center gap-4">
-                  {/* Game Code Display */}
-                  <div className="bg-coral-50 p-3 rounded-md border border-coral-200 inline-block text-center">
-                    <p className="text-sm text-slate-800 mb-1">Game Code:</p>
-                    <div className="text-2xl font-bold tracking-wider text-coral-600">{game.code}</div>
-                  </div>
-                  
-                  <div className="bg-softwhite p-3 rounded-md border border-sky-100 inline-block">
-                    <p className="text-sm text-slate-800">Share this link with friends:</p>
-                    <code className="font-mono text-xs bg-white px-2 py-1 rounded block mt-1">{shareableLink}</code>
-                  </div>
-                </div>
-              </div>
-            </Card>
-            
-            {/* Waiting for game to start message */}
-            <div className="w-full mt-6 text-center">
-              <div className="bg-sky-100 p-4 rounded-lg inline-flex items-center">
-                <LoadingSpinner size="sm" />
-                <span className="ml-2 text-slate-800">Waiting for the host to start the game...</span>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* SCENARIO 3: Player has joined (has playerID) - Show full lobby UI */}
-        {playerId && (
-          <>
-            {/* Game Details Section */}
-            <Card title="Game Details" className="w-full bg-gradient-to-r from-sky-100 to-white border-l-4 border-sky-500">
-              <div className="space-y-4">
-                {/* Game Code Display */}
-                <div className="flex flex-col sm:flex-row justify-between items-center bg-coral-50 p-3 rounded-md border border-coral-200">
-                  <div className="text-slate-800 mb-2 sm:mb-0">
-                    <span className="font-medium">Game Code:</span>
-                    <p className="text-xs text-slate-600">Share this code with friends</p>
-                  </div>
-                  <div className="text-2xl font-bold tracking-wider text-coral-600 bg-white px-4 py-1 rounded-md border border-coral-200">
-                    {game.code}
-                  </div>
-                </div>
-                
-                <div>
-                  <span className="font-medium text-slate-800">Share Link:</span>
-                  <div className="flex mt-2">
-                    <input
-                      type="text"
-                      readOnly
-                      value={shareableLink}
-                      className="flex-1 p-2 border-2 border-r-0 rounded-l-md text-sm bg-softwhite focus:outline-none focus:ring-2 focus:ring-coral-300"
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                    />
-                    <button 
-                      className="bg-coral-500 text-white px-3 rounded-r-md hover:bg-coral-600 transition-colors"
-                      onClick={() => {
-                        navigator.clipboard.writeText(shareableLink);
-                        toast.success('Link copied to clipboard!');
-                      }}
+              <AnimatePresence>
+                <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teams.map((team, index) => (
+                    <motion.div
+                      key={team.id}
+                      variants={listItemVariants}
+                      custom={index}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
                     >
-                      Copy
-                    </button>
-                  </div>
+                      <TeamCard
+                        team={team}
+                        players={players.filter(p => p.teamId === team.id)}
+                        onPlayerJoin={(teamId: string) => handleTeamSelect(selectedPlayerId!, teamId)}
+                        isLoading={changingTeam && selectedPlayerId === playerId}
+                        isActive={players.find(p => p.id === selectedPlayerId)?.teamId === team.id}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </Card>
+
+          {/* Words Section */}
+          <Card className="w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold font-poppins">Your Words</h2>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={handleAddAIWords}
+                    isLoading={isAddingAIWords}
+                    leftIcon={<span>🤖</span>}
+                  >
+                    Add AI Words
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => setIsAddingWord(true)}
+                    leftIcon={<span>✏️</span>}
+                  >
+                    Add Word
+                  </Button>
                 </div>
               </div>
-            </Card>
 
-            {/* Teams Section */}
-            <Card title={`Teams (${teams.length})`} className="w-full bg-gradient-to-r from-mint-100 to-white border-l-4 border-mint-500" icon={<span className="text-xl">🏆</span>}>
-              {/* Add Team Form */}
-              <form onSubmit={handleAddTeam} className="mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    placeholder="Enter team name"
-                    className="flex-1 p-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-300 bg-softwhite"
-                    disabled={isAddingTeam}
-                  />
+              <AnimatePresence>
+                <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {words.map((word, index) => (
+                    <motion.div
+                      key={word.id}
+                      variants={listItemVariants}
+                      custom={index}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="relative group"
+                    >
+                      <div className="p-4 bg-white rounded-lg border-2 border-neutral-light group-hover:border-primary transition-colors">
+                        <p className="font-medium">{word.text}</p>
+                        <motion.button
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
+                          onClick={() => handleRemoveWord(word.id)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          ❌
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </Card>
+
+          {/* Game Start Requirements */}
+          {startGameErrors.length > 0 && (
+            <motion.div
+              className="bg-red-50 border-2 border-red-200 rounded-lg p-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={springs.bouncy}
+            >
+              <h3 className="text-lg font-semibold text-red-700 mb-2">
+                Before starting the game:
+              </h3>
+              <ul className="list-disc list-inside text-red-600 space-y-1">
+                {startGameErrors.map((error, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    {error}
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </Grid>
+      </div>
+
+      {/* Add Team Modal */}
+      <AnimatePresence>
+        {isAddingTeam && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-lg p-6 w-full max-w-md"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+            >
+              <h2 className="text-xl font-bold mb-4">Add New Team</h2>
+              <form onSubmit={handleAddTeam}>
+                <input
+                  type="text"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  className="w-full p-2 border-2 rounded-lg mb-4"
+                  placeholder="Team name"
+                />
+                <div className="flex justify-end gap-2">
                   <Button
+                    variant="secondary"
+                    onClick={() => setIsAddingTeam(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
                     type="submit"
-                    disabled={isAddingTeam || !newTeamName.trim()}
                     isLoading={isAddingTeam}
-                    loadingText="Adding..."
-                    leftIcon={<span>➕</span>}
                   >
                     Add Team
                   </Button>
                 </div>
-                {addTeamError && (
-                  <p className="mt-2 text-sm text-red-600">{addTeamError}</p>
-                )}
               </form>
-
-              {/* Teams List */}
-              {teams.length === 0 ? (
-                <p className="text-slate-500 italic">No teams created yet. Add at least two teams to start the game.</p>
-              ) : (
-                <ul className="space-y-3">
-                  {teams.map((team, index) => (
-                    <li
-                      key={team.id}
-                      className={`flex justify-between items-center p-3 rounded-md shadow-sm transition-all transform hover:scale-[1.01] hover:shadow-md ${
-                        index % 3 === 0 ? 'bg-coral-100' : index % 3 === 1 ? 'bg-sky-100' : 'bg-mint-100'
-                      }`}
-                    >
-                      <span className="font-medium text-slate-800 flex items-center">
-                        <span className="text-lg mr-2">{index % 3 === 0 ? '🔴' : index % 3 === 1 ? '🔵' : '🟢'}</span>
-                        {team.name}
-                      </span>
-                      <Badge variant="info" size="sm">
-                        {players.filter(p => p.teamId === team.id).length} players
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-
-            {/* Players Section */}
-            <Card title={`Players (${players.length})`} className="w-full bg-gradient-to-r from-sunny-100 to-white border-l-4 border-sunny-500" icon={<span className="text-xl">👥</span>}>
-              {teamChangeError && (
-                <p className="text-red-600 text-sm mb-3">{teamChangeError}</p>
-              )}
-              
-              {players.length === 0 && !loading && <p className="text-slate-500 italic">No players have joined yet.</p>}
-              {players.length > 0 && (
-                <ul className="space-y-3 list-none">
-                  {players.map((player) => {
-                    // Find the team name based on player.teamId
-                    const teamName = teams.find(t => t.id === player.teamId)?.name;
-                    const isCurrentPlayer = player.id === selectedPlayerId;
-                    const teamColor = teams.findIndex(t => t.id === player.teamId) % 3;
-                    const bgColor = teamColor === 0 ? 'bg-coral-100' : teamColor === 1 ? 'bg-sky-100' : 'bg-mint-100';
-                    
-                    return (
-                      <li key={player.id} className={`text-slate-800 ${bgColor} p-3 rounded-md shadow-sm transition-all ${isCurrentPlayer ? 'border-2 border-coral-500' : ''}`}>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium flex items-center">
-                            <span className="text-lg mr-2">👤</span>
-                            {player.name} 
-                            {player.isHost && <Badge variant="warning" size="sm" className="ml-1">Host</Badge>} 
-                            {isCurrentPlayer && <Badge variant="primary" size="sm" className="ml-1">You</Badge>}
-                          </span>
-                          <span className="text-sm text-slate-800 font-medium px-2 py-1 bg-white rounded-full">
-                            {teamName ? `${teamName}` : '(No team)'}
-                          </span>
-                        </div>
-                        
-                        {/* Team Selection UI - only shown for the current player or for testing */}
-                        {isCurrentPlayer && (
-                          <div className="mt-2 p-2 bg-white rounded-md shadow-inner">
-                            <div className="text-sm text-slate-800 mb-1 font-medium">Select Team:</div>
-                            <div className="flex flex-wrap gap-2">
-                              {teams.map((team, index) => (
-                                <Button
-                                  key={team.id}
-                                  onClick={() => handleTeamSelect(player.id, team.id)}
-                                  disabled={changingTeam || player.teamId === team.id}
-                                  variant={player.teamId === team.id ? 'primary' : 'secondary'}
-                                  size="sm"
-                                  className={player.teamId === team.id ? 'animate-pulse' : ''}
-                                >
-                                  {team.name}
-                                </Button>
-                              ))}
-                              {player.teamId && (
-                                <Button
-                                  onClick={() => handleTeamSelect(player.id, null)}
-                                  disabled={changingTeam}
-                                  variant="danger"
-                                  size="sm"
-                                >
-                                  Leave Team
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </Card>
-
-            {/* Add Words Section */}
-            <Card title="Add Words" className="w-full bg-gradient-to-r from-coral-100 to-white border-l-4 border-coral-500" icon={<span className="text-xl">📝</span>}>
-              {wordError && (
-                <p className="mb-3 text-sm text-red-600">{wordError}</p>
-              )}
-
-              {playerId ? (
-                <>
-                  {/* Word Input Form */}
-                  <form onSubmit={handleAddWord} className="mb-4">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newWord}
-                        onChange={(e) => setNewWord(e.target.value)}
-                        placeholder="Enter a word or phrase"
-                        className="flex-1 p-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-300 bg-softwhite"
-                        disabled={isAddingWord}
-                      />
-                      <Button
-                        type="submit"
-                        disabled={isAddingWord || !newWord.trim()}
-                        isLoading={isAddingWord}
-                        loadingText="Adding..."
-                        leftIcon={<span>✏️</span>}
-                      >
-                        Add Word
-                      </Button>
-                    </div>
-                  </form>
-
-                  {/* AI Words Button */}
-                  <Button
-                    onClick={handleAddAIWords}
-                    disabled={isAddingAIWords}
-                    isLoading={isAddingAIWords}
-                    loadingText="Adding AI Words..."
-                    variant="success"
-                    fullWidth
-                    className="mb-4"
-                    leftIcon={<span>🤖</span>}
-                  >
-                    Add 5 Random Words
-                  </Button>
-
-                  {/* Player's Words List */}
-                  <div className="mt-4 p-3 bg-white rounded-md shadow-inner border border-sky-100">
-                    <h3 className="text-md font-medium text-slate-800 mb-2 flex items-center">
-                      <span className="text-lg mr-2">🔤</span>
-                      Your Words ({words.length})
-                    </h3>
-                    {words.length === 0 ? (
-                      <p className="text-slate-500 italic">You haven't added any words yet.</p>
-                    ) : (
-                      <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        {words.map((word, index) => (
-                          <li 
-                            key={word.id} 
-                            className={`flex justify-between items-center p-2 rounded-md shadow-sm transition-all hover:shadow-md ${
-                              index % 3 === 0 ? 'bg-coral-100' : index % 3 === 1 ? 'bg-sky-100' : 'bg-mint-100'
-                            }`}
-                          >
-                            <span className="text-slate-800 font-medium">{word.text}</span>
-                            <Button
-                              onClick={() => handleRemoveWord(word.id)}
-                              disabled={isRemovingWord === word.id}
-                              isLoading={isRemovingWord === word.id}
-                              loadingText="Removing..."
-                              variant="danger"
-                              size="sm"
-                              leftIcon={<span>🗑️</span>}
-                            >
-                              Remove
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <p className="text-slate-500 italic">Join the game to add words.</p>
-              )}
-              
-              <div className="flex items-center justify-center mt-4 p-2 bg-sky-100 rounded-full">
-                <p className="text-sm text-slate-800 font-medium flex items-center">
-                  <span className="text-lg mr-2">🎲</span>
-                  Total words in pot: 
-                  <Badge variant="info" size="md" className="ml-2 text-lg">
-                    {allWordsCount}
-                  </Badge>
-                </p>
-              </div>
-            </Card>
-
-            {/* Start Game Button - Only shown if in lobby state */}
-            {game && game.state === 'lobby' && (
-              <div className="w-full mt-6">
-                <Button 
-                  fullWidth
-                  size="lg"
-                  disabled={!canStart || isStartingGame}
-                  isLoading={isStartingGame}
-                  loadingText="Starting Game..."
-                  onClick={handleStartGame}
-                  className="py-4 text-xl shadow-lg transform transition-transform active:scale-95 border-b-4 border-coral-700"
-                  leftIcon={<span className="text-xl">🎮</span>}
-                >
-                  START GAME
-                </Button>
-                
-                {/* Show error messages from verification service */}
-                {startGameErrors.map((error, index) => (
-                  <p key={index} className="mt-2 text-sm text-sunny-700 font-medium flex items-center justify-center">
-                    <span className="mr-1">⚠️</span> {error}
-                  </p>
-                ))}
-                
-                {/* Debug information - remove in production */}
-                <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
-                  <p><strong>Debug Info:</strong></p>
-                  <p>Host: {isHost ? 'Yes' : 'No'}</p>
-                  <p>Teams: {teams.length}</p>
-                  <p>Can Start: {canStart ? 'Yes' : 'No'}</p>
-                  <p>Player ID: {playerId}</p>
-                </div>
-              </div>
-            )}
-            
-            {/* Game Already Started Message - Only shown for joined players if game is not in lobby */}
-            {game && game.state !== 'lobby' && (
-              <div className="w-full mt-6">
-                <Card className="w-full bg-gradient-to-r from-sunny-100 to-white border-l-4 border-sunny-500">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="text-6xl">🎮</div>
-                    <h2 className="text-2xl font-bold text-slate-800">Game Has Started!</h2>
-                    <p className="text-slate-800">This game is currently in progress.</p>
-                    <Button 
-                      onClick={() => router.push(`/game/${gameId}?playerId=${playerId}`)}
-                      variant="primary"
-                      className="mt-4"
-                      leftIcon={<span>▶️</span>}
-                    >
-                      Go to Game
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            )}
-          </>
+            </motion.div>
+          </motion.div>
         )}
-      </main>
-      
-      <div className="mt-4 text-center text-slate-800 text-xs">
-        <p>Squabbl - The ultimate word guessing party game!</p>
-      </div>
-    </div>
+      </AnimatePresence>
+
+      {/* Add Word Modal */}
+      <AnimatePresence>
+        {isAddingWord && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-lg p-6 w-full max-w-md"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+            >
+              <h2 className="text-xl font-bold mb-4">Add New Word</h2>
+              <form onSubmit={handleAddWord}>
+                <input
+                  type="text"
+                  value={newWord}
+                  onChange={(e) => setNewWord(e.target.value)}
+                  className="w-full p-2 border-2 rounded-lg mb-4"
+                  placeholder="Enter a word"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsAddingWord(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    isLoading={isAddingWord}
+                  >
+                    Add Word
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
