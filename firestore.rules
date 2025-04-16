@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Remove the wide-open rule and replace with specific collection rules
+    // match /{document=**} {
+    //   allow read, write: if true;
+    // }
+
+    // Games collection rules
+    match /games/{gameId} {
+      // Anyone can read game state
+      allow read: if true;
+      
+      // Anyone can create a game
+      allow create: if true;
+      
+      // Allow updates during gameplay
+      allow update: if true;
+      
+      // Teams subcollection - teams are managed by the host
+      match /teams/{teamId} {
+        // Anyone can read team information
+        allow read: if true;
+        
+        // Allow team management
+        allow create, update, delete: if true;
+      }
+      
+      // Players subcollection - joining and team selection
+      match /players/{playerId} {
+        // Anyone can read the player list
+        allow read: if true;
+        
+        // Allow player management
+        allow create, update, delete: if true;
+      }
+      
+      // Words subcollection - word contribution and management
+      match /words/{wordId} {
+        // Allow reading words
+        allow read: if true;
+        
+        // Allow word management in lobby
+        allow create, delete: if get(/databases/$(database)/documents/games/$(gameId)).data.state == 'lobby';
+        
+        // Allow updating words during gameplay
+        allow update: if true;
+      }
+    }
+    
+    // Helper function to check if the user is the host of a game
+    function isHost(gameId, userId) {
+      return userId != null && 
+             exists(/databases/$(database)/documents/games/$(gameId)/players/$(userId)) &&
+             get(/databases/$(database)/documents/games/$(gameId)/players/$(userId)).data.isHost == true;
+    }
+  }
+}

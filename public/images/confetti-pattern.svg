@@ -1,0 +1,147 @@
+<svg width="700" height="700" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Coral color -->
+    <path id="confetti-1" d="M0,0 l10,0 l-5,10 z" fill="#EF798A" />
+    <!-- Sky color -->
+    <circle id="confetti-2" cx="5" cy="5" r="5" fill="#A8DADC" />
+    <!-- Mint color -->
+    <rect id="confetti-3" x="0" y="0" width="7" height="7" fill="#B0EACD" />
+    <!-- Sunny color -->
+    <path id="confetti-4" d="M0,0 l10,0 l5,5 l-5,5 l-10,0 z" fill="#FFD166" />
+  </defs>
+  
+  <!-- Pattern using repeating elements -->
+  <g opacity="0.4">
+    <!-- Row 1 -->
+    <use href="#confetti-1" x="20" y="30" transform="rotate(45, 25, 35)" />
+    <use href="#confetti-2" x="80" y="50" />
+    <use href="#confetti-3" x="150" y="20" transform="rotate(30, 153.5, 23.5)" />
+    <use href="#confetti-4" x="220" y="40" transform="rotate(10, 225, 45)" />
+    <use href="#confetti-1" x="290" y="35" transform="rotate(75, 295, 40)" />
+    <use href="#confetti-2" x="350" y="15" />
+    <use href="#confetti-3" x="420" y="45" transform="rotate(60, 423.5, 48.5)" />
+    <use href="#confetti-4" x="480" y="25" transform="rotate(20, 485, 30)" />
+    <use href="#confetti-1" x="550" y="55" transform="rotate(15, 555, 60)" />
+    <use href="#confetti-2" x="620" y="35" />
+    
+    <!-- Row 2 -->
+    <use href="#confetti-3" x="40" y="90" transform="rotate(15, 43.5, 93.5)" />
+    <use href="#confetti-4" x="110" y="110" transform="rotate(50, 115, 115)" />
+    <use href="#confetti-1" x="170" y="85" transform="rotate(25, 175, 90)" />
+    <use href="#confetti-2" x="240" y="105" />
+    <use href="#confetti-3" x="310" y="95" transform="rotate(45, 313.5, 98.5)" />
+    <use href="#confetti-4" x="370" y="80" transform="rotate(35, 375, 85)" />
+    <use href="#confetti-1" x="440" y="115" transform="rotate(10, 445, 120)" />
+    <use href="#confetti-2" x="500" y="90" />
+    <use href="#confetti-3" x="570" y="100" transform="rotate(70, 573.5, 103.5)" />
+    <use href="#confetti-4" x="640" y="115" transform="rotate(5, 645, 120)" />
+    
+    <!-- Row 3 -->
+    <use href="#confetti-1" x="25" y="160" transform="rotate(30, 30, 165)" />
+    <use href="#confetti-2" x="95" y="140" />
+    <use href="#confetti-3" x="155" y="170" transform="rotate(55, 158.5, 173.5)" />
+    <use href="#confetti-4" x="225" y="150" transform="rotate(15, 230, 155)" />
+    <use href="#confetti-1" x="285" y="175" transform="rotate(40, 290, 180)" />
+    <use href="#confetti-2" x="355" y="145" />
+    <use href="#confetti-3" x="415" y="165" transform="rotate(25, 418.5, 168.5)" />
+    <use href="#confetti-4" x="485" y="160" transform="rotate(60, 490, 165)" />
+    <use href="#confetti-1" x="545" y="140" transform="rotate(80, 550, 145)" />
+    <use href="#confetti-2" x="615" y="170" />
+    
+    <!-- Row 4 -->
+    <use href="#confetti-3" x="35" y="220" transform="rotate(35, 38.5, 223.5)" />
+    <use href="#confetti-4" x="105" y="200" transform="rotate(20, 110, 205)" />
+    <use href="#confetti-1" x="165" y="225" transform="rotate(50, 170, 230)" />
+    <use href="#confetti-2" x="235" y="210" />
+    <use href="#confetti-3" x="295" y="195" transform="rotate(10, 298.5, 198.5)" />
+    <use href="#confetti-4" x="365" y="215" transform="rotate(40, 370, 220)" />
+    <use href="#confetti-1" x="425" y="230" transform="rotate(70, 430, 235)" />
+    <use href="#confetti-2" x="495" y="205" />
+    <use href="#confetti-3" x="555" y="220" transform="rotate(30, 558.5, 223.5)" />
+    <use href="#confetti-4" x="625" y="195" transform="rotate(75, 630, 200)" />
+    
+    <!-- Row 5 -->
+    <use href="#confetti-1" x="20" y="280" transform="rotate(55, 25, 285)" />
+    <use href="#confetti-2" x="90" y="260" />
+    <use href="#confetti-3" x="150" y="285" transform="rotate(40, 153.5, 288.5)" />
+    <use href="#confetti-4" x="220" y="265" transform="rotate(25, 225, 270)" />
+    <use href="#confetti-1" x="280" y="290" transform="rotate(10, 285, 295)" />
+    <use href="#confetti-2" x="350" y="270" />
+    <use href="#confetti-3" x="410" y="280" transform="rotate(50, 413.5, 283.5)" />
+    <use href="#confetti-4" x="480" y="260" transform="rotate(65, 485, 265)" />
+    <use href="#confetti-1" x="540" y="285" transform="rotate(30, 545, 290)" />
+    <use href="#confetti-2" x="610" y="275" />
+    
+    <!-- Row 6 -->
+    <use href="#confetti-3" x="30" y="340" transform="rotate(20, 33.5, 343.5)" />
+    <use href="#confetti-4" x="100" y="320" transform="rotate(45, 105, 325)" />
+    <use href="#confetti-1" x="160" y="345" transform="rotate(15, 165, 350)" />
+    <use href="#confetti-2" x="230" y="325" />
+    <use href="#confetti-3" x="290" y="335" transform="rotate(30, 293.5, 338.5)" />
+    <use href="#confetti-4" x="360" y="350" transform="rotate(75, 365, 355)" />
+    <use href="#confetti-1" x="420" y="330" transform="rotate(55, 425, 335)" />
+    <use href="#confetti-2" x="490" y="345" />
+    <use href="#confetti-3" x="550" y="325" transform="rotate(10, 553.5, 328.5)" />
+    <use href="#confetti-4" x="620" y="340" transform="rotate(60, 625, 345)" />
+    
+    <!-- Row 7 -->
+    <use href="#confetti-1" x="25" y="400" transform="rotate(35, 30, 405)" />
+    <use href="#confetti-2" x="95" y="380" />
+    <use href="#confetti-3" x="155" y="405" transform="rotate(25, 158.5, 408.5)" />
+    <use href="#confetti-4" x="225" y="395" transform="rotate(50, 230, 400)" />
+    <use href="#confetti-1" x="285" y="375" transform="rotate(15, 290, 380)" />
+    <use href="#confetti-2" x="355" y="395" />
+    <use href="#confetti-3" x="415" y="380" transform="rotate(65, 418.5, 383.5)" />
+    <use href="#confetti-4" x="485" y="400" transform="rotate(40, 490, 405)" />
+    <use href="#confetti-1" x="545" y="390" transform="rotate(75, 550, 395)" />
+    <use href="#confetti-2" x="615" y="380" />
+    
+    <!-- Row 8 -->
+    <use href="#confetti-3" x="40" y="450" transform="rotate(45, 43.5, 453.5)" />
+    <use href="#confetti-4" x="110" y="465" transform="rotate(10, 115, 470)" />
+    <use href="#confetti-1" x="170" y="445" transform="rotate(60, 175, 450)" />
+    <use href="#confetti-2" x="240" y="460" />
+    <use href="#confetti-3" x="300" y="450" transform="rotate(30, 303.5, 453.5)" />
+    <use href="#confetti-4" x="370" y="470" transform="rotate(20, 375, 475)" />
+    <use href="#confetti-1" x="430" y="455" transform="rotate(50, 435, 460)" />
+    <use href="#confetti-2" x="500" y="445" />
+    <use href="#confetti-3" x="560" y="465" transform="rotate(70, 563.5, 468.5)" />
+    <use href="#confetti-4" x="630" y="450" transform="rotate(25, 635, 455)" />
+    
+    <!-- Row 9 -->
+    <use href="#confetti-1" x="20" y="520" transform="rotate(25, 25, 525)" />
+    <use href="#confetti-2" x="90" y="500" />
+    <use href="#confetti-3" x="150" y="525" transform="rotate(55, 153.5, 528.5)" />
+    <use href="#confetti-4" x="220" y="515" transform="rotate(35, 225, 520)" />
+    <use href="#confetti-1" x="280" y="505" transform="rotate(65, 285, 510)" />
+    <use href="#confetti-2" x="350" y="520" />
+    <use href="#confetti-3" x="410" y="505" transform="rotate(15, 413.5, 508.5)" />
+    <use href="#confetti-4" x="480" y="525" transform="rotate(45, 485, 530)" />
+    <use href="#confetti-1" x="540" y="510" transform="rotate(20, 545, 515)" />
+    <use href="#confetti-2" x="610" y="495" />
+    
+    <!-- Row 10 -->
+    <use href="#confetti-3" x="35" y="580" transform="rotate(30, 38.5, 583.5)" />
+    <use href="#confetti-4" x="105" y="565" transform="rotate(60, 110, 570)" />
+    <use href="#confetti-1" x="165" y="575" transform="rotate(10, 170, 580)" />
+    <use href="#confetti-2" x="235" y="585" />
+    <use href="#confetti-3" x="295" y="570" transform="rotate(75, 298.5, 573.5)" />
+    <use href="#confetti-4" x="365" y="590" transform="rotate(25, 370, 595)" />
+    <use href="#confetti-1" x="425" y="570" transform="rotate(40, 430, 575)" />
+    <use href="#confetti-2" x="495" y="580" />
+    <use href="#confetti-3" x="555" y="565" transform="rotate(50, 558.5, 568.5)" />
+    <use href="#confetti-4" x="625" y="585" transform="rotate(15, 630, 590)" />
+    
+    <!-- Row 11 -->
+    <use href="#confetti-1" x="30" y="640" transform="rotate(45, 35, 645)" />
+    <use href="#confetti-2" x="100" y="625" />
+    <use href="#confetti-3" x="160" y="645" transform="rotate(30, 163.5, 648.5)" />
+    <use href="#confetti-4" x="230" y="630" transform="rotate(70, 235, 635)" />
+    <use href="#confetti-1" x="290" y="650" transform="rotate(20, 295, 655)" />
+    <use href="#confetti-2" x="360" y="635" />
+    <use href="#confetti-3" x="420" y="645" transform="rotate(60, 423.5, 648.5)" />
+    <use href="#confetti-4" x="490" y="630" transform="rotate(10, 495, 635)" />
+    <use href="#confetti-1" x="550" y="640" transform="rotate(80, 555, 645)" />
+    <use href="#confetti-2" x="620" y="650" />
+  </g>
+</svg> 
