@@ -1,59 +1,86 @@
-import React from 'react';
+import { forwardRef, ReactNode } from 'react';
 
 interface CardProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  variant?: 'default' | 'elevated' | 'outlined' | 'accent';
+  interactive?: boolean;
+  containerClassName?: string;
   title?: string;
-  subtitle?: string;
-  icon?: React.ReactNode;
-  className?: string;
   headerClassName?: string;
-  bodyClassName?: string;
-  footerClassName?: string;
-  footer?: React.ReactNode;
-  hover?: boolean;
-  onClick?: () => void;
+  subtitle?: string;
+  className?: string;
 }
 
-export default function Card({
+const Card = forwardRef<HTMLDivElement, CardProps>(({
   children,
-  title,
-  subtitle,
-  icon,
+  variant = 'default',
+  interactive = false,
   className = '',
+  containerClassName = '',
+  title,
   headerClassName = '',
-  bodyClassName = '',
-  footerClassName = '',
-  footer,
-  hover = false,
-  onClick,
-}: CardProps) {
-  const hoverClass = hover ? 'hover:shadow-lg transition-shadow cursor-pointer' : '';
-  const clickableProps = onClick ? { onClick, role: 'button', tabIndex: 0 } : {};
+  subtitle,
+  ...props
+}, ref) => {
+  const baseStyles = 'card rounded-xl transition-shadow';
   
+  const variantStyles = {
+    default: 'bg-white border border-neutral-light',
+    elevated: 'bg-white shadow-lg',
+    outlined: 'border-2 border-neutral-light bg-transparent',
+    accent: 'card-accent'
+  };
+
+  const interactiveStyles = interactive ? 'cursor-pointer hover:-translate-y-1 active:translate-y-0 transition-transform' : '';
+
   return (
-    <div 
-      className={`bg-white rounded-lg shadow-md border border-sky-100 ${hoverClass} ${className}`}
-      {...clickableProps}
+    <div
+      ref={ref}
+      className={`
+        ${baseStyles}
+        ${variantStyles[variant]}
+        ${interactiveStyles}
+        ${className}
+      `}
+      {...props}
     >
-      {(title || icon) && (
-        <div className={`flex items-center p-4 border-b border-sky-100 ${headerClassName}`}>
-          {icon && <div className="mr-3">{icon}</div>}
-          <div>
-            {title && <h3 className="text-lg font-semibold text-slate-800">{title}</h3>}
-            {subtitle && <p className="text-sm text-slate-600">{subtitle}</p>}
-          </div>
+      {(title || subtitle) && (
+        <div className={`mb-4 ${headerClassName}`}>
+          {title && <h3 className="text-xl font-bold font-poppins text-slate-800">{title}</h3>}
+          {subtitle && <p className="text-sm text-slate-600">{subtitle}</p>}
         </div>
       )}
-      
-      <div className={`p-4 ${bodyClassName}`}>
-        {children}
-      </div>
-      
-      {footer && (
-        <div className={`border-t border-sky-100 p-4 ${footerClassName}`}>
-          {footer}
-        </div>
-      )}
+      {children}
     </div>
   );
-} 
+});
+
+Card.displayName = 'Card';
+
+// Container component for card grids
+export const CardGrid = ({
+  children,
+  className = '',
+  columns = 3,
+}: {
+  children: ReactNode;
+  className?: string;
+  columns?: number;
+}) => {
+  return (
+    <div 
+      className={`
+        grid gap-6
+        grid-cols-1
+        sm:grid-cols-2
+        ${columns >= 3 ? 'lg:grid-cols-3' : ''}
+        ${columns >= 4 ? 'xl:grid-cols-4' : ''}
+        ${className}
+      `}
+    >
+      {children}
+    </div>
+  );
+};
+
+export default Card;

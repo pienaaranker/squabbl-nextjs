@@ -104,7 +104,7 @@ export default function Home() {
             <button
               onClick={handleCreateGame}
               disabled={isLoading || !hostName.trim()}
-              className="w-full px-6 py-3 text-lg font-semibold text-white bg-coral-500 rounded-md hover:bg-coral-600 focus:outline-none focus:ring-2 focus:ring-coral-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:translate-y-[-2px]"
+              className="btn btn-primary w-full"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
@@ -141,7 +141,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={isJoining || !joinGameCode.trim()}
-                className="w-full px-6 py-3 text-lg font-semibold text-white bg-sunny-500 rounded-md hover:bg-sunny-600 focus:outline-none focus:ring-2 focus:ring-sunny-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:translate-y-[-2px]"
+                className="btn btn-accent w-full"
               >
                 {isJoining ? (
                   <span className="flex items-center justify-center">

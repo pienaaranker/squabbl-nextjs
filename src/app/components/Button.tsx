@@ -1,25 +1,30 @@
-import React from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
+import { buttonVariants, springs } from '@/lib/animations';
+import { ReactNode } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
-type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning';
+type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'accent';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
   isLoading?: boolean;
   loadingText?: string;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+  children: ReactNode;
+  icon?: ReactNode;
 }
 
 const variantClasses = {
-  primary: 'bg-coral-500 hover:bg-coral-600 text-white focus:ring-coral-300',
-  secondary: 'bg-sky-500 hover:bg-sky-600 text-white focus:ring-sky-300',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
   success: 'bg-mint-500 hover:bg-mint-600 text-slate-800 focus:ring-mint-300',
   danger: 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-300',
   warning: 'bg-sunny-500 hover:bg-sunny-600 text-slate-800 focus:ring-sunny-300',
+  accent: 'btn-accent'
 };
 
 const sizeClasses = {
@@ -37,6 +42,7 @@ export default function Button({
   loadingText,
   leftIcon,
   rightIcon,
+  icon,
   className = '',
   disabled,
   ...props
@@ -46,7 +52,7 @@ export default function Button({
   const widthClass = fullWidth ? 'w-full' : '';
   
   return (
-    <button
+    <motion.button
       className={`
         ${variantClass}
         ${sizeClass}
@@ -58,6 +64,10 @@ export default function Button({
         ${className}
       `}
       disabled={disabled || isLoading}
+      variants={buttonVariants}
+      initial="idle"
+      whileHover="hover"
+      whileTap="tap"
       {...props}
     >
       {isLoading ? (
@@ -67,11 +77,12 @@ export default function Button({
         </>
       ) : (
         <>
+          {icon && <span className="mr-2">{icon}</span>}
           {leftIcon && <span className="mr-2">{leftIcon}</span>}
           {children}
           {rightIcon && <span className="ml-2">{rightIcon}</span>}
         </>
       )}
-    </button>
+    </motion.button>
   );
 } 
