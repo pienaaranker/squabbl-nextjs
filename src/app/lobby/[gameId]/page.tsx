@@ -545,7 +545,13 @@ export default function LobbyPage() {
               
               <div className="mt-6 text-center">
                 <p className="text-slate-800 mb-4">Join this game to participate, add words, and be part of a team!</p>
-                <div className="flex justify-center">
+                <div className="flex justify-center flex-col items-center gap-4">
+                  {/* Game Code Display */}
+                  <div className="bg-coral-50 p-3 rounded-md border border-coral-200 inline-block text-center">
+                    <p className="text-sm text-slate-800 mb-1">Game Code:</p>
+                    <div className="text-2xl font-bold tracking-wider text-coral-600">{game.code}</div>
+                  </div>
+                  
                   <div className="bg-softwhite p-3 rounded-md border border-sky-100 inline-block">
                     <p className="text-sm text-slate-800">Share this link with friends:</p>
                     <code className="font-mono text-xs bg-white px-2 py-1 rounded block mt-1">{shareableLink}</code>
@@ -569,7 +575,18 @@ export default function LobbyPage() {
           <>
             {/* Game Details Section */}
             <Card title="Game Details" className="w-full bg-gradient-to-r from-sky-100 to-white border-l-4 border-sky-500">
-              <div className="space-y-2">
+              <div className="space-y-4">
+                {/* Game Code Display */}
+                <div className="flex flex-col sm:flex-row justify-between items-center bg-coral-50 p-3 rounded-md border border-coral-200">
+                  <div className="text-slate-800 mb-2 sm:mb-0">
+                    <span className="font-medium">Game Code:</span>
+                    <p className="text-xs text-slate-600">Share this code with friends</p>
+                  </div>
+                  <div className="text-2xl font-bold tracking-wider text-coral-600 bg-white px-4 py-1 rounded-md border border-coral-200">
+                    {game.code}
+                  </div>
+                </div>
+                
                 <div>
                   <span className="font-medium text-slate-800">Share Link:</span>
                   <div className="flex mt-2">

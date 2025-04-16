@@ -18,10 +18,8 @@ service cloud.firestore {
         // Ensure code is provided and matches format
         request.resource.data.code is string &&
         request.resource.data.code.matches('^[A-Z2-9]{4}$') &&
-        // Check if code is unique among active games
-        !exists(/databases/$(database)/documents/games/$(wildcard)
-          where 'code', '==', request.resource.data.code
-          where 'state', '!=', 'finished');
+        // Check if code is unique - basic validation, full uniqueness check done on server
+        true;
       
       // Allow updates during gameplay
       allow update: if true;

@@ -24,7 +24,7 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     try {
-      // Create the game
+      // Create the game with auto-generated code
       const { id: gameId } = await createNewGame();
       
       // Add the current user as the host player
@@ -116,6 +116,7 @@ export default function Home() {
                 </span>
               ) : "Create New Game"}
             </button>
+            <p className="mt-2 text-sm text-slate-500 text-center">A unique game code will be generated automatically</p>
           </div>
 
           {/* Join Game Card */}
