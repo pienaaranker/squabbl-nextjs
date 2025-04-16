@@ -6,6 +6,15 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    borderRadius: {
+      'none': '0px',
+      'sm': '0.125rem',
+      'DEFAULT': '0.25rem',
+      'md': '0.375rem',
+      'lg': '0.5rem',
+      'xl': '0.75rem',
+      'full': '9999px',
+    },
     extend: {
       colors: {
         // Color Palette from PRD (NFR1.4)
@@ -41,6 +50,10 @@ module.exports = {
         'slate': {
           800: '#2F4F4F',          // Text: Dark Slate Gray
         },
+      },
+      fontFamily: {
+        'nunito': ['var(--font-nunito)'],
+        'poppins': ['var(--font-poppins)'],
       },
     },
   },

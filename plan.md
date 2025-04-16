@@ -5,7 +5,7 @@ This checklist breaks down the development of Squabbl into manageable phases bas
 ## Phase 1: Project Setup & Backend Foundation
 
 * [x] Initialize **Next.js** Project (Ref: NFR2.1) - *Assumed pre-existing*
-* [ ] Setup Firebase Project (Enable Firestore, Hosting) (Ref: NFR2.2, NFR2.3) - *User needs to do this in Firebase Console*
+* [x] Setup Firebase Project (Enable Firestore, Hosting) (Ref: NFR2.2, NFR2.3) - *User needs to do this in Firebase Console*
 * [x] Integrate Firebase SDK into the **Next.js** application (consider client/server components).
 * [x] Define Firestore Data Models:
     * [x] `games` collection (documents represent game sessions, storing state like round, activeTeamId, code, etc.) (Ref: FR1.9)
@@ -89,9 +89,9 @@ This checklist breaks down the development of Squabbl into manageable phases bas
 
 ## Phase 7: Deployment & Testing
 
-* [ ] Configure Deployment settings (Firebase Hosting or Vercel) (Ref: NFR2.3).
-* [ ] Build the **Next.js** application for production.
-* [ ] Implement basic error handling (e.g., display user-friendly messages for Firestore errors, Next.js error boundaries).
+* [x] Configure Deployment settings (Firebase Hosting or Vercel) (Ref: NFR2.3).
+* [x] Build the **Next.js** application for production.
+* [x] Implement basic error handling (e.g., display user-friendly messages for Firestore errors, Next.js error boundaries).
 * [ ] Conduct thorough testing:
     * [ ] Functional testing (all features work as per PRD).
     * [ ] UI/UX testing (visuals, usability, responsiveness).

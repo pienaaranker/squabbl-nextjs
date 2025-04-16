@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Nunito, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
-const inter = Inter({
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-nunito",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  weight: ["500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -19,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-softwhite text-slate-800 flex flex-col">
+    <html lang="en" className={`${nunito.variable} ${poppins.variable}`}>
+      <body className="min-h-screen bg-softwhite text-slate-800 flex flex-col font-nunito">
         <Toaster
           position="top-center"
           toastOptions={{
@@ -30,8 +39,9 @@ export default function RootLayout({
               color: "#2F4F4F",
               border: "1px solid #A8DADC",
               padding: "12px 16px",
-              borderRadius: "6px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+              fontFamily: "var(--font-nunito)",
             },
             success: {
               iconTheme: {

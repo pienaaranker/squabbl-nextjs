@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #F8F8F8; /* Soft White from PRD */
@@ -7,6 +9,7 @@
   --secondary: #A8DADC;  /* Sky Blue from PRD */
   --accent: #B0EACD;     /* Mint Green from PRD */
   --highlight: #FFD166;  /* Sunny Yellow from PRD */
+  --border-radius: 0.5rem; /* Default border radius */
 }
 
 @theme inline {
@@ -16,8 +19,8 @@
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
   --color-highlight: var(--highlight);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-nunito);
+  --font-heading: var(--font-poppins);
 }
 
 /* We're not using dark mode in this app according to the PRD */
@@ -31,7 +34,91 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Typography Styles based on the style guide */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+/* Component Styles */
+/* Buttons */
+.btn {
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #E64965; /* darker coral */
+}
+.btn-primary:active {
+  background-color: #D41E42; /* even darker coral */
+}
+
+.btn-secondary {
+  background-color: var(--accent);
+  color: var(--foreground);
+}
+.btn-secondary:hover {
+  background-color: #7DDCAD; /* darker mint */
+}
+.btn-secondary:active {
+  background-color: #4ACE8D; /* even darker mint */
+}
+
+.btn-accent {
+  background-color: var(--secondary);
+  color: var(--foreground);
+}
+.btn-accent:hover {
+  background-color: #7BBEC1; /* darker sky */
+}
+.btn-accent:active {
+  background-color: #4F9FA3; /* even darker sky */
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  border: 1px solid #E6F3F4; /* sky-100 */
+}
+
+.card-accent {
+  background-color: #E6F3F4; /* sky-100 */
+}
+
+.card-highlight {
+  border: 2px solid #FFD166; /* sunny-500 */
+}
+
+/* Inputs */
+input, textarea, select {
+  border-radius: var(--border-radius);
+  border: 2px solid #C9E6E8; /* sky-300 */
+  padding: 0.75rem;
+  color: var(--foreground);
+  transition: all 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px #F6B3BF; /* coral-300 */
 }
 
 /* Add utility classes for custom transitions */
@@ -39,4 +126,44 @@ body {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+/* Animation utilities */
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s infinite;
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-wiggle {
+  animation: wiggle 1.5s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% { 
+    transform: rotate(-3deg); 
+  }
+  50% { 
+    transform: rotate(3deg); 
+  }
 }
