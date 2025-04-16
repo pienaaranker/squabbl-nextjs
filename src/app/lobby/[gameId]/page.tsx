@@ -50,9 +50,29 @@ export default function LobbyPage() {
 
   // Effect for setting shareable link
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const baseUrl = window.location.origin;
-      setShareableLink(`${baseUrl}/join/${gameId}`);
+    if (gameId) {
+      const fetchGame = async () => {
+        try {
+          const gameDoc = await getDoc(doc(db, "games", gameId));
+          if (gameDoc.exists()) {
+            const gameData = { id: gameDoc.id, ...gameDoc.data() } as Game;
+            setGame(gameData);
+            
+            // Set shareable info with game code
+            const origin = window.location.origin;
+            setShareableLink(`${origin}/join/${gameId}`);
+          } else {
+            setError("Game not found");
+          }
+        } catch (err) {
+          console.error("Error fetching game:", err);
+          setError("Failed to load game");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchGame();
     }
   }, [gameId]);
 

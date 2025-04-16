@@ -3,6 +3,7 @@
  */
 export interface Game {
   id: string; // Document ID
+  code: string; // 4-character alphanumeric game code
   state: 'lobby' | 'round1' | 'round2' | 'round3' | 'finished';
   currentRound: 1 | 2 | 3 | null;
   activeTeamId: string | null; // ID of the team whose turn it is

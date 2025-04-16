@@ -2,31 +2,67 @@ import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDocs
 import { db } from "./config"; // Import the initialized db instance
 import type { Game, Player, Team, Word } from "@/types/firestore"; // Import all types
 import { GameVerificationService } from "./gameVerificationService"; // Import verification service
+import { generateGameCode } from "../utils/gameCode"; // Import code generation utility
 
 /**
  * Creates a new game session document in Firestore.
- * @returns {Promise<string>} The ID of the newly created game document.
+ * @returns {Promise<{id: string, code: string}>} The ID and code of the newly created game document.
  * @throws {Error} If there's an issue creating the document in Firestore.
  */
-export async function createNewGame(): Promise<string> {
+export async function createNewGame(): Promise<{id: string, code: string}> {
   try {
     const gamesCollectionRef = collection(db, "games");
+    let code: string;
+    let codeExists: boolean;
+
+    // Generate a unique code
+    do {
+      code = generateGameCode();
+      const codeQuery = query(gamesCollectionRef, where("code", "==", code), where("state", "!=", "finished"));
+      const codeSnapshot = await getDocs(codeQuery);
+      codeExists = !codeSnapshot.empty;
+    } while (codeExists);
 
     // Prepare the initial game data
-    // Note: We don't set the 'id' field here, Firestore generates it.
-    // We also don't set activeTeamId, activePlayerId, or turnOrder yet.
-    const newGameData: Omit<Game, 'id' | 'code' | 'activeTeamId' | 'activePlayerId' | 'turnOrder'> = {
+    const newGameData: Omit<Game, 'id'> = {
+      code,
       state: 'lobby',
       currentRound: null,
+      activeTeamId: null,
+      activePlayerId: null,
+      turnOrder: [],
       createdAt: serverTimestamp() as any, // Use server timestamp
     };
 
     const docRef = await addDoc(gamesCollectionRef, newGameData);
-    console.log("New game created with ID: ", docRef.id);
-    return docRef.id;
+    console.log("New game created with ID: ", docRef.id, "and code:", code);
+    return { id: docRef.id, code };
   } catch (error) {
     console.error("Error creating new game:", error);
     throw new Error("Failed to create game session.");
+  }
+}
+
+/**
+ * Finds a game by its code.
+ * @param {string} code - The game code to search for.
+ * @returns {Promise<Game | null>} The game document if found, null otherwise.
+ */
+export async function findGameByCode(code: string): Promise<Game | null> {
+  try {
+    const gamesCollectionRef = collection(db, "games");
+    const q = query(gamesCollectionRef, where("code", "==", code.toUpperCase()), where("state", "!=", "finished"));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const gameDoc = querySnapshot.docs[0];
+    return { id: gameDoc.id, ...gameDoc.data() } as Game;
+  } catch (error) {
+    console.error("Error finding game by code:", error);
+    throw new Error("Failed to find game.");
   }
 }
 

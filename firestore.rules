@@ -13,8 +13,15 @@ service cloud.firestore {
       // Anyone can read game state
       allow read: if true;
       
-      // Anyone can create a game
-      allow create: if true;
+      // Allow game creation only if the code is unique for active games
+      allow create: if 
+        // Ensure code is provided and matches format
+        request.resource.data.code is string &&
+        request.resource.data.code.matches('^[A-Z2-9]{4}$') &&
+        // Check if code is unique among active games
+        !exists(/databases/$(database)/documents/games/$(wildcard)
+          where 'code', '==', request.resource.data.code
+          where 'state', '!=', 'finished');
       
       // Allow updates during gameplay
       allow update: if true;
