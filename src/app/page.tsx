@@ -176,7 +176,7 @@ export default function Home() {
           <div className="space-y-4 text-slate-600">
             <p>1. Create a new game or join an existing one with a 4-character code</p>
             <p>2. Form teams of at least 2 players each</p>
-            <p>3. Each player contributes words to the game's word pool</p>
+            <p>3. Each player contributes words to the game&apos;s word pool</p>
             <p>4. Play through three exciting rounds:</p>
             <ul className="list-disc list-inside pl-4 space-y-2">
               <li>Round 1: Describe the word without saying it</li>

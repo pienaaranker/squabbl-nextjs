@@ -31,7 +31,7 @@ export async function createNewGame(): Promise<{id: string, code: string}> {
       activeTeamId: null,
       activePlayerId: null,
       turnOrder: [],
-      createdAt: serverTimestamp() as any, // Use server timestamp
+      createdAt: serverTimestamp(), // Use server timestamp
     };
 
     const docRef = await addDoc(gamesCollectionRef, newGameData);
@@ -80,7 +80,7 @@ export async function addHostToGame(gameId: string, playerData: Pick<Player, 'na
       ...playerData,
       teamId: null, // Host starts without a team but can join one
       isHost: true, // Mark this player as the host
-      joinedAt: serverTimestamp() as any,
+      joinedAt: serverTimestamp(),
     };
     const docRef = await addDoc(playersCollectionRef, newPlayerData);
     console.log(`Host '${playerData.name}' added to game ${gameId} with ID: ${docRef.id}`);
@@ -109,7 +109,7 @@ export async function addPlayerToGame(gameId: string, playerData: Pick<Player, '
       ...playerData,
       teamId: null, // Player starts without a team
       isHost: false, // Assume not host by default, might need adjustment later
-      joinedAt: serverTimestamp() as any,
+      joinedAt: serverTimestamp(),
     };
     const docRef = await addDoc(playersCollectionRef, newPlayerData);
     console.log(`Player '${playerData.name}' added to game ${gameId} with ID: ${docRef.id}`);

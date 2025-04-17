@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, collection, query, orderBy, where, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, orderBy, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from '@/lib/firebase/config';
 import toast from 'react-hot-toast';
 import type { Game, Team, Player, Word } from '@/types/firestore';
 import {
-  getGameState,
-  getTeamsForGame,
   getRandomUnguessedWord,
   markWordAsGuessed,
   updateTeamScore,
@@ -22,7 +20,6 @@ import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';
 import Badge from '@/app/components/Badge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
-import Timer from '@/app/components/Timer';
 import TeamCard from '@/app/components/TeamCard';
 import WordCard from '@/app/components/WordCard';
 import CurrentTurnInfo from '@/app/components/CurrentTurnInfo';
@@ -43,7 +40,7 @@ export default function GamePage() {
   const [error, setError] = useState<string | null>(null);
   const [isDescriber, setIsDescriber] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60); // 60 seconds per turn
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const setIsTimerRunning = useState(false)[1];
   const [isCorrectGuessProcessing, setIsCorrectGuessProcessing] = useState(false);
   const [isSkipProcessing, setIsSkipProcessing] = useState(false);
   const [wordCounts, setWordCounts] = useState<{ guessed: number; total: number }>({ guessed: 0, total: 0 });
@@ -141,7 +138,7 @@ export default function GamePage() {
             
             // If turnStartTime is a Firestore timestamp, convert it
             if (gameData.turnStartTime && typeof gameData.turnStartTime === 'object' && 'toMillis' in gameData.turnStartTime) {
-              gameData.turnStartTime = (gameData.turnStartTime as any).toMillis();
+              gameData.turnStartTime = (gameData.turnStartTime as { toMillis(): number }).toMillis();
             }
             
             setError(null);
@@ -185,6 +182,35 @@ export default function GamePage() {
     fetchGameData();
   }, [gameId, playerId, router]);
   
+  // Handle time up - advance to next team
+  const handleTimeUp = React.useCallback(async () => {
+    if (isDescriber) {
+      try {
+        await advanceToNextTeam(gameId);
+        setCurrentWord(null);
+        setIsTimerRunning(false);
+        toast.error("Time's up! Next team's turn.");
+      } catch (error) {
+        console.error("Error advancing turn:", error);
+        toast.error("Failed to advance to next team");
+      }
+    }
+  }, [gameId, isDescriber, setCurrentWord, setIsTimerRunning]);
+
+  // Function to start the timer
+  const startTimer = React.useCallback(async () => {
+    // Update turnStartTime in Firebase
+    try {
+      const gameRef = doc(db, "games", gameId);
+      await updateDoc(gameRef, {
+        turnStartTime: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error starting timer:", error);
+      toast.error("Failed to start timer");
+    }
+  }, [gameId]);
+
   // Effect to sync timer with game state
   useEffect(() => {
     if (!game?.turnStartTime) {
@@ -234,21 +260,7 @@ export default function GamePage() {
         clearInterval(timerRef.current);
       }
     };
-  }, [game?.turnStartTime, isDescriber]);
-  
-  // Function to start the timer
-  const startTimer = async () => {
-    // Update turnStartTime in Firebase
-    try {
-      const gameRef = doc(db, "games", gameId);
-      await updateDoc(gameRef, {
-        turnStartTime: serverTimestamp()
-      });
-    } catch (error) {
-      console.error("Error starting timer:", error);
-      toast.error("Failed to start timer");
-    }
-  };
+  }, [game?.turnStartTime, isDescriber, handleTimeUp, setIsTimerRunning]);
   
   // Effect to get a new word when the active player changes or when a word is guessed/skipped
   useEffect(() => {
@@ -269,22 +281,7 @@ export default function GamePage() {
     };
     
     getNewWord();
-  }, [gameId, game?.currentRound, isDescriber, currentWord]);
-  
-  // Handle time up - advance to next team
-  const handleTimeUp = async () => {
-    if (isDescriber) {
-      try {
-        await advanceToNextTeam(gameId);
-        setCurrentWord(null);
-        setIsTimerRunning(false);
-        toast.error("Time's up! Next team's turn.");
-      } catch (error) {
-        console.error("Error advancing turn:", error);
-        toast.error("Failed to advance to next team");
-      }
-    }
-  };
+  }, [gameId, game?.currentRound, isDescriber, currentWord, startTimer]);
   
   // Handle correct guess
   const handleCorrectGuess = async () => {

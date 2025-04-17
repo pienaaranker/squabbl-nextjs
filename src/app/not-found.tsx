@@ -15,7 +15,7 @@ export default function NotFound() {
           />
         </div>
         <p className="text-slate-700 mb-6 bg-white p-4 rounded-xl font-nunito">
-          We couldn't find the page you're looking for.
+          We couldn&apos;t find the page you&apos;re looking for.
         </p>
         <Link href="/" className="btn btn-primary inline-block w-full">
           Return Home

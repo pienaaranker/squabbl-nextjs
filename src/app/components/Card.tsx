@@ -4,7 +4,6 @@ interface CardProps {
   children: ReactNode;
   variant?: 'default' | 'elevated' | 'outlined' | 'accent';
   interactive?: boolean;
-  containerClassName?: string;
   title?: string;
   headerClassName?: string;
   subtitle?: string;
@@ -16,7 +15,6 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({
   variant = 'default',
   interactive = false,
   className = '',
-  containerClassName = '',
   title,
   headerClassName = '',
   subtitle,

@@ -21,7 +21,7 @@ export default function Error({
         <h2 className="text-2xl font-bold text-coral-500 mb-4 font-poppins">Oops! Something went wrong</h2>
         <div className="mb-6 p-4 bg-sky-100" style={{ borderRadius: 'var(--border-radius)' }}>
           <p className="text-slate-800 font-nunito">
-            We're sorry, but we encountered an unexpected error.
+            We&apos;re sorry, but we encountered an unexpected error.
           </p>
         </div>
         <div className="space-y-4">

@@ -1,5 +1,5 @@
 import { motion, HTMLMotionProps } from 'framer-motion';
-import { buttonVariants, springs } from '@/lib/animations';
+import { buttonVariants } from '@/lib/animations';
 import { ReactNode } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 

@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from '@/lib/firebase/config';
 import { addPlayerToGame } from '@/lib/firebase/gameService';
 import type { Game } from '@/types/firestore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { pageVariants, springs } from '@/lib/animations';
 import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';

@@ -1,6 +1,6 @@
 import { collection, query, getDocs } from "firebase/firestore";
 import { db } from "./config";
-import type { Game, Team, Player, Word } from "@/types/firestore";
+import type { Team, Player, Word } from "@/types/firestore";
 
 export interface VerificationResult {
   valid: boolean;

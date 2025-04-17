@@ -2,17 +2,16 @@
 
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react'; // Import React, useState, useEffect
-import { doc, onSnapshot, collection, query, orderBy, getDocs, where, getDoc } from "firebase/firestore"; // Updated Firestore functions
+import { doc, onSnapshot, collection, query, orderBy, getDocs, getDoc } from "firebase/firestore"; // Updated Firestore functions
 import { db } from '@/lib/firebase/config'; // Import db instance
 import type { Game, Team, Player, Word } from '@/types/firestore'; // Import Game, Team, and Player types
 import { addTeamToGame, updatePlayerTeam, addWord, removeWord, addAIWords, getPlayerWords, startGame, addPlayerToGame } from '@/lib/firebase/gameService'; // Import functions
 import { GameVerificationService } from '@/lib/firebase/gameVerificationService'; // Import verification service
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { pageVariants, cardVariants, listItemVariants, springs } from '@/lib/animations';
+import { pageVariants, listItemVariants, springs } from '@/lib/animations';
 import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';
-import Badge from '@/app/components/Badge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
 import { Grid } from '@/app/components/layouts/Grid';
@@ -38,17 +37,16 @@ export default function LobbyPage() {
   const [isAddingTeam, setIsAddingTeam] = useState(false);
   const [isAddingWord, setIsAddingWord] = useState(false);
   const [isAddingAIWords, setIsAddingAIWords] = useState(false);
-  const [isRemovingWord, setIsRemovingWord] = useState<string | null>(null);
-  const [addTeamError, setAddTeamError] = useState<string | null>(null);
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(playerId);
+  const selectedPlayerId = playerId;
   const [changingTeam, setChangingTeam] = useState(false);
-  const [teamChangeError, setTeamChangeError] = useState<string | null>(null);
-  const [wordError, setWordError] = useState<string | null>(null);
   const [isStartingGame, setIsStartingGame] = useState(false);
   const [isHost, setIsHost] = useState(false);
-  const [joining, setJoining] = useState(false);
-  const [newPlayerName, setNewPlayerName] = useState('');
+  const [addTeamError, setAddTeamError] = useState<string | null>(null);
+  const [teamChangeError, setTeamChangeError] = useState<string | null>(null);
+  const [wordError, setWordError] = useState<string | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [joining, setJoining] = useState(false);
   const [startGameErrors, setStartGameErrors] = useState<string[]>([]);
   const [canStart, setCanStart] = useState<boolean>(false);
 
@@ -197,7 +195,7 @@ export default function LobbyPage() {
     };
 
     fetchGameData();
-  }, [gameId, playerId]);
+  }, [gameId, playerId, router, game?.state]);
 
   // Effect to check if the game can be started
   useEffect(() => {
@@ -232,7 +230,7 @@ export default function LobbyPage() {
       // If this is a new player trying to join (no playerId), show game in progress message
       // The UI will handle showing the appropriate message based on game state
     }
-  }, [game, gameId, router, playerId]);
+  }, [game, game?.state, gameId, router, playerId]);
 
   // Handler for adding a new team
   const handleAddTeam = async (e: React.FormEvent) => {
@@ -240,13 +238,12 @@ export default function LobbyPage() {
     if (!newTeamName.trim() || !gameId) return;
 
     setIsAddingTeam(true);
-    setAddTeamError(null);
     try {
       await addTeamToGame(gameId, { name: newTeamName.trim() });
       setNewTeamName(''); // Clear input field on success
     } catch (err) {
       console.error("Failed to add team:", err);
-      setAddTeamError(err instanceof Error ? err.message : "Could not add team.");
+      toast.error(err instanceof Error ? err.message : "Could not add team.");
     } finally {
       setIsAddingTeam(false);
     }

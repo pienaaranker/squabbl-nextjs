@@ -4,11 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, collection, query, orderBy } from "firebase/firestore";
 import { db } from '@/lib/firebase/config';
-import toast from 'react-hot-toast';
 import type { Game, Team, Player } from '@/types/firestore';
 import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';
-import Badge from '@/app/components/Badge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
 
@@ -20,7 +18,8 @@ export default function ResultsPage() {
   const router = useRouter();
 
   // State for game data
-  const [game, setGame] = useState<Game | null>(null);
+  // State for tracking whether data is successfully retrieved
+  const setGame = useState<Game | null>(null)[1];
   const [teams, setTeams] = useState<Team[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +89,7 @@ export default function ResultsPage() {
     };
 
     fetchGameData();
-  }, [gameId, playerId, router]);
+  }, [gameId, playerId, router, setGame]);
 
   // Function to start a new game
   const handlePlayAgain = () => {
@@ -121,11 +120,6 @@ export default function ResultsPage() {
     );
   }
 
-  // Get player name
-  const getPlayerName = (playerId: string) => {
-    const player = players.find(p => p.id === playerId);
-    return player?.name || "Unknown Player";
-  };
 
   return (
     <div className="min-h-screen bg-softwhite p-6">

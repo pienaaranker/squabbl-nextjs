@@ -1,4 +1,4 @@
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { springs } from '@/lib/animations';
 import { forwardRef, InputHTMLAttributes } from 'react';
 
