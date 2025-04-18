@@ -148,7 +148,7 @@ export default function Home() {
                   onChange={(e) => setJoinGameCode(e.target.value.toUpperCase())}
                   placeholder="Enter 4-character code"
                   maxLength={4}
-                  className="w-full p-3 border border-sky-200 rounded-md focus:outline-none focus:ring-2 focus:ring-sunny-300 bg-softwhite placeholder-slate-400"
+                  className="w-full p-3 border border-sky-200 rounded-md focus:outline-none focus:ring-2 focus:ring-sunny-300 bg-softwhite placeholder-slate-400 uppercase"
                 />
               </div>
               
