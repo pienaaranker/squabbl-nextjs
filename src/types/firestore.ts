@@ -11,6 +11,8 @@ export interface Game {
   turnOrder: string[]; // Array of team IDs in the order they take turns
   createdAt: Date; // Or Firebase Timestamp
   turnStartTime?: number | null; // Timestamp when the current turn started
+  lastSpeakerIds?: { [teamId: string]: string }; // Maps team IDs to their last active speaker's ID
+  lastGuessedWord?: { text: string; teamId: string; timestamp: number } | null; // Info about the last correctly guessed word
   // Potentially add hostId if needed for specific controls
 }
 

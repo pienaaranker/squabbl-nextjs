@@ -486,22 +486,42 @@ export async function advanceToNextTeam(gameId: string): Promise<void> {
     const nextTeamIndex = (currentTeamIndex + 1) % gameData.turnOrder.length;
     const nextTeamId = gameData.turnOrder[nextTeamIndex];
     
-    // 4. Get players for the next team
+    // 4. Get all players for the next team
     const teamPlayers = await getPlayersForTeam(gameId, nextTeamId);
     
     if (teamPlayers.length === 0) {
       throw new Error("The next team must have at least one player.");
     }
     
-    // 5. Find the appropriate player from the next team to be active
-    // For simplicity, we'll just choose the first player in this implementation
-    const nextActivePlayerId = teamPlayers[0].id;
+    // 5. Find the current player's index in their team
+    const currentTeamPlayers = await getPlayersForTeam(gameId, gameData.activeTeamId!);
+    const currentPlayerIndex = currentTeamPlayers.findIndex(p => p.id === gameData.activePlayerId);
     
-    // 6. Update game state
+    // 6. If we're staying in the same team, move to next player, otherwise start with first player
+    let nextActivePlayerId: string;
+    if (nextTeamId === gameData.activeTeamId) {
+      // Same team, next player
+      const nextPlayerIndex = (currentPlayerIndex + 1) % currentTeamPlayers.length;
+      nextActivePlayerId = currentTeamPlayers[nextPlayerIndex].id;
+    } else {
+      // Get the last player who spoke for the next team
+      const lastSpeakerIndex = teamPlayers.findIndex(p => p.id === gameData.lastSpeakerIds?.[nextTeamId]);
+      if (lastSpeakerIndex === -1) {
+        // If no one has spoken yet, start with first player
+        nextActivePlayerId = teamPlayers[0].id;
+      } else {
+        // Start with the next player after the last speaker
+        const nextPlayerIndex = (lastSpeakerIndex + 1) % teamPlayers.length;
+        nextActivePlayerId = teamPlayers[nextPlayerIndex].id;
+      }
+    }
+    
+    // 7. Update game state with new team, player, and record the last speaker
     await updateDoc(gameRef, {
       activeTeamId: nextTeamId,
       activePlayerId: nextActivePlayerId,
-      turnStartTime: serverTimestamp()
+      turnStartTime: serverTimestamp(),
+      [`lastSpeakerIds.${gameData.activeTeamId}`]: gameData.activePlayerId
     });
     
     console.log(`Advanced turn to team ${nextTeamId}, player ${nextActivePlayerId}`);
