@@ -11,7 +11,6 @@ import { pageVariants, springs } from '@/lib/animations';
 import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
-import { AnimatedIcon } from '@/app/components/ui';
 
 export default function JoinGamePage() {
   const params = useParams<{ gameId: string }>();
@@ -108,12 +107,6 @@ export default function JoinGamePage() {
       >
         <Card className="max-w-md w-full">
           <div className="text-center p-6">
-            <AnimatedIcon
-              icon="⚠️"
-              color="coral"
-              size="xl"
-              animation="wiggle"
-            />
             <h2 className="text-2xl font-bold font-poppins text-foreground mt-4 mb-2">
               Unable to Join Game
             </h2>
@@ -142,13 +135,7 @@ export default function JoinGamePage() {
       <Card className="max-w-md w-full">
         <div className="p-6">
           <div className="text-center mb-6">
-            <AnimatedIcon
-              icon="🎮"
-              color="sky"
-              size="lg"
-              animation="bounce"
-            />
-            <h1 className="text-2xl font-bold font-poppins text-foreground mt-4 mb-2">
+            <h1 className="text-2xl font-bold font-poppins text-foreground mb-4">
               Join Game
             </h1>
             {game && (

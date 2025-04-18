@@ -5,6 +5,17 @@ import { GameVerificationService } from "./gameVerificationService"; // Import v
 import { generateGameCode } from "../utils/gameCode"; // Import code generation utility
 import { generateWords } from '../services/geminiService';
 
+// Add new types for turn sequence
+interface Turn {
+  teamId: string;
+  playerId: string;
+}
+
+interface TurnSequence {
+  turns: Turn[];
+  currentIndex: number;
+}
+
 /**
  * Creates a new game session document in Firestore.
  * @returns {Promise<{id: string, code: string}>} The ID and code of the newly created game document.
@@ -332,7 +343,7 @@ export async function startGame(gameId: string): Promise<void> {
     const players = await getAllPlayers(gameId);
     console.log(`Players (${players.length}):`, players);
     
-    // 3. Verify game can be started (assuming the current user is host as this check is done in UI)
+    // 3. Verify game can be started
     console.log("3️⃣ Verifying game can be started");
     const verificationResult = await GameVerificationService.verifyGameCanStart(gameId, teams, players, true);
     if (!verificationResult.valid) {
@@ -341,49 +352,49 @@ export async function startGame(gameId: string): Promise<void> {
     }
     console.log("✅ Game validation passed");
     
-    // 4. Randomly determine team turn order
-    console.log("4️⃣ Determining team turn order");
+    // 4. Generate complete turn sequence
+    console.log("4️⃣ Generating turn sequence");
     const shuffledTeamIds = teams.map(team => team.id).sort(() => Math.random() - 0.5);
-    console.log("Shuffled team order:", shuffledTeamIds);
+    const turnSequence: Turn[] = [];
     
-    // 5. Set the activeTeamId to the first team in the shuffled order
-    const activeTeamId = shuffledTeamIds[0];
-    console.log("🎮 Active team:", activeTeamId);
-    
-    // 6. Get players for the active team and set the first player as active
-    console.log("5️⃣ Finding players for active team");
-    const teamPlayers = players.filter(p => p.teamId === activeTeamId);
-    console.log(`Team players (${teamPlayers.length}):`, teamPlayers);
-    
-    if (teamPlayers.length === 0) {
-      console.error("❌ No players found for active team");
-      throw new Error("The active team must have at least one player.");
+    // Create a sequence that covers all teams multiple times to ensure we have enough turns
+    for (let round = 0; round < 3; round++) {
+      for (const teamId of shuffledTeamIds) {
+        const teamPlayers = players.filter(p => p.teamId === teamId);
+        // Add each player in the team to the sequence
+        for (const player of teamPlayers) {
+          turnSequence.push({ teamId, playerId: player.id });
+        }
+      }
     }
     
-    const activePlayerId = teamPlayers[0].id;
-    console.log("👤 Active player:", activePlayerId);
+    // 5. Set initial turn from the sequence
+    const firstTurn = turnSequence[0];
     
-    // 7. Update the game document with all the new state
+    // 6. Update the game document with all the new state
     console.log("6️⃣ Updating game state in Firestore");
     const gameRef = doc(db, "games", gameId);
     const updateData = {
       state: "round1",
       currentRound: 1,
       turnOrder: shuffledTeamIds,
-      activeTeamId,
-      activePlayerId,
+      activeTeamId: firstTurn.teamId,
+      activePlayerId: firstTurn.playerId,
       turnState: 'paused',
-      turnStartTime: null
+      turnStartTime: null,
+      turnSequence: {
+        turns: turnSequence,
+        currentIndex: 0
+      }
     };
     console.log("Update data:", updateData);
     
     await updateDoc(gameRef, updateData);
     
     console.log("✅ Game started successfully!");
-    console.log(`Game ${gameId} started with turn order: ${shuffledTeamIds.join(", ")}`);
   } catch (error) {
     console.error(`❌ Error starting game ${gameId}:`, error);
-    throw error; // Rethrow to handle in UI
+    throw error;
   }
 }
 
@@ -481,59 +492,23 @@ export async function advanceToNextTeam(gameId: string): Promise<void> {
       throw new Error("Game not found.");
     }
     
-    const gameData = gameSnap.data() as Game;
+    const gameData = gameSnap.data() as Game & { turnSequence: TurnSequence };
     
-    // 2. Find current team's index in turn order
-    const currentTeamIndex = gameData.turnOrder.indexOf(gameData.activeTeamId!);
+    // 2. Get next turn from the sequence
+    const nextIndex = (gameData.turnSequence.currentIndex + 1) % gameData.turnSequence.turns.length;
+    const nextTurn = gameData.turnSequence.turns[nextIndex];
     
-    if (currentTeamIndex === -1) {
-      throw new Error("Current team not found in turn order.");
-    }
-    
-    // 3. Calculate next team's index (wrapping around to 0 if at the end)
-    const nextTeamIndex = (currentTeamIndex + 1) % gameData.turnOrder.length;
-    const nextTeamId = gameData.turnOrder[nextTeamIndex];
-    
-    // 4. Get all players for the next team
-    const teamPlayers = await getPlayersForTeam(gameId, nextTeamId);
-    
-    if (teamPlayers.length === 0) {
-      throw new Error("The next team must have at least one player.");
-    }
-    
-    // 5. Find the current player's index in their team
-    const currentTeamPlayers = await getPlayersForTeam(gameId, gameData.activeTeamId!);
-    const currentPlayerIndex = currentTeamPlayers.findIndex(p => p.id === gameData.activePlayerId);
-    
-    // 6. If we're staying in the same team, move to next player, otherwise start with first player
-    let nextActivePlayerId: string;
-    if (nextTeamId === gameData.activeTeamId) {
-      // Same team, next player
-      const nextPlayerIndex = (currentPlayerIndex + 1) % currentTeamPlayers.length;
-      nextActivePlayerId = currentTeamPlayers[nextPlayerIndex].id;
-    } else {
-      // Get the last player who spoke for the next team
-      const lastSpeakerIndex = teamPlayers.findIndex(p => p.id === gameData.lastSpeakerIds?.[nextTeamId]);
-      if (lastSpeakerIndex === -1) {
-        // If no one has spoken yet, start with first player
-        nextActivePlayerId = teamPlayers[0].id;
-      } else {
-        // Start with the next player after the last speaker
-        const nextPlayerIndex = (lastSpeakerIndex + 1) % teamPlayers.length;
-        nextActivePlayerId = teamPlayers[nextPlayerIndex].id;
-      }
-    }
-    
-    // 7. Update game state with new team, player, and record the last speaker
+    // 3. Update game state with new team and player
     await updateDoc(gameRef, {
-      activeTeamId: nextTeamId,
-      activePlayerId: nextActivePlayerId,
-      turnState: 'paused', // Set turn state to paused
-      turnStartTime: null, // Clear turn start time until the new player starts their turn
+      activeTeamId: nextTurn.teamId,
+      activePlayerId: nextTurn.playerId,
+      turnState: 'paused',
+      turnStartTime: null,
+      'turnSequence.currentIndex': nextIndex,
       [`lastSpeakerIds.${gameData.activeTeamId}`]: gameData.activePlayerId
     });
     
-    console.log(`Advanced turn to team ${nextTeamId}, player ${nextActivePlayerId}`);
+    console.log(`Advanced turn to team ${nextTurn.teamId}, player ${nextTurn.playerId}`);
   } catch (error) {
     console.error(`Error advancing to next team in game ${gameId}:`, error);
     throw new Error("Failed to advance to next team.");
@@ -558,7 +533,7 @@ export async function advanceToNextRound(gameId: string): Promise<void> {
       throw new Error("Game not found.");
     }
     
-    const gameData = gameSnap.data() as Game;
+    const gameData = gameSnap.data() as Game & { turnSequence: TurnSequence };
     
     // 2. Determine the next round
     const currentRound = gameData.currentRound as number;
@@ -570,25 +545,19 @@ export async function advanceToNextRound(gameId: string): Promise<void> {
     const nextRound = currentRound + 1;
     const nextRoundState = `round${nextRound}` as 'round1' | 'round2' | 'round3';
     
-    // 3. Set the first team in the turn order as active
-    const firstTeamId = gameData.turnOrder[0];
-    const teamPlayers = await getPlayersForTeam(gameId, firstTeamId);
+    // 3. Get next turn from the sequence
+    const nextIndex = (gameData.turnSequence.currentIndex + 1) % gameData.turnSequence.turns.length;
+    const nextTurn = gameData.turnSequence.turns[nextIndex];
     
-    if (teamPlayers.length === 0) {
-      throw new Error("The first team must have at least one player.");
-    }
-    
-    // 4. Set the first player as active
-    const nextActivePlayerId = teamPlayers[0].id;
-    
-    // 5. Update game state
+    // 4. Update game state
     await updateDoc(gameRef, {
       state: nextRoundState,
       currentRound: nextRound,
-      activeTeamId: firstTeamId,
-      activePlayerId: nextActivePlayerId,
+      activeTeamId: nextTurn.teamId,
+      activePlayerId: nextTurn.playerId,
       turnState: 'paused',
-      turnStartTime: null
+      turnStartTime: null,
+      'turnSequence.currentIndex': nextIndex
     });
     
     console.log(`Advanced to round ${nextRound}`);

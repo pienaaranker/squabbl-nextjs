@@ -11,6 +11,11 @@ import Button from '@/app/components/Button';
 import Badge from '@/app/components/Badge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
+import dynamic from 'next/dynamic';
+import { useWindowSize } from '@/lib/hooks/useWindowSize';
+
+// Dynamically import Confetti to avoid SSR issues
+const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
 
 export default function ResultsPage() {
   const params = useParams<{ gameId: string }>();
@@ -18,6 +23,7 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const playerId = searchParams.get('playerId');
   const router = useRouter();
+  const { width, height } = useWindowSize();
 
   // State for game data
   const [game, setGame] = useState<Game | null>(null);
@@ -26,6 +32,16 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [winningTeam, setWinningTeam] = useState<Team | null>(null);
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  // Effect to manage confetti duration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowConfetti(false);
+    }, 30000); // Show confetti for 30 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Effect to fetch game data
   useEffect(() => {
@@ -129,6 +145,15 @@ export default function ResultsPage() {
 
   return (
     <div className="min-h-screen bg-softwhite p-6">
+      {showConfetti && !loading && !error && (
+        <Confetti
+          width={width}
+          height={height}
+          numberOfPieces={200}
+          recycle={false}
+          colors={['#60A5FA', '#34D399', '#F59E0B', '#EC4899']}
+        />
+      )}
       <header className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-slate-800 mb-2">Game Results</h1>
         <p className="text-xl text-slate-600">Congratulations to all players!</p>
@@ -159,7 +184,7 @@ export default function ResultsPage() {
             <TeamCard
               key={team.id}
               team={team}
-              players={players}
+              players={players.filter(p => p.teamId === team.id)}
               isActive={index === 0}
               className={index === 0 ? 'bg-sky-100' : ''}
             />

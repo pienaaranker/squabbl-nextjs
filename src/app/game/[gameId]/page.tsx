@@ -190,8 +190,8 @@ export default function GamePage() {
   
   // Effect to sync timer with game state
   useEffect(() => {
-    if (!game?.turnStartTime) {
-      // If no turnStartTime is available, set a default timer
+    if (!game?.turnStartTime || game?.turnState === 'paused') {
+      // If no turnStartTime is available or game is paused, set a default timer
       setTimeLeft(60);
       setIsTimerRunning(false);
       return;
@@ -262,8 +262,11 @@ export default function GamePage() {
           const word = await getRandomUnguessedWord(gameId, game.currentRound);
           setCurrentWord(word);
           
-          // Start the timer when a new word is fetched
-          await startTimer();
+          // Only start the timer if we're not in an active turn
+          // This prevents timer reset on refresh
+          if (game.turnState !== 'active' || !game.turnStartTime) {
+            await startTimer();
+          }
         } catch (error) {
           console.error("Error getting random word:", error);
           toast.error("Failed to get a word");
@@ -326,10 +329,15 @@ export default function GamePage() {
       // Mark word as guessed
       await markWordAsGuessed(gameId, currentWord.id, game.currentRound);
       
-      // Update team score and last guessed word
+      // Update team score in the teams subcollection
+      const teamRef = doc(db, "games", gameId, "teams", game.activeTeamId);
+      await updateDoc(teamRef, {
+        score: increment(1)
+      });
+
+      // Update last guessed word in the game document
       const gameRef = doc(db, "games", gameId);
       await updateDoc(gameRef, {
-        [`teams.${game.activeTeamId}.score`]: increment(1),
         lastGuessedWord: {
           text: currentWord.text,
           teamId: game.activeTeamId,
@@ -477,14 +485,6 @@ export default function GamePage() {
                 <Badge variant="info" size="lg" rounded>
                   Words: {wordCounts.guessed}/{wordCounts.total}
                 </Badge>
-                
-                {/* Debug Player ID Badge - Hidden on mobile */}
-                <div className="hidden sm:block text-xs p-2 rounded-md bg-neutral-light border border-neutral">
-                  <div className="text-neutral-dark">
-                    <div><strong>Player:</strong> {getCurrentPlayer()?.name || 'Unknown'}</div>
-                    <div><strong>Team:</strong> {getPlayerTeam()?.name || 'None'}</div>
-                  </div>
-                </div>
               </div>
             </div>
           </Card>
