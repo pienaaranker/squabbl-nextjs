@@ -186,6 +186,23 @@ export default function Home() {
             <p>5. The team with the most points at the end wins!</p>
           </div>
         </div>
+
+        {/* Buy Me a Coffee Button */}
+        <div className="mt-12 flex flex-col items-center text-center">
+          <p className="text-slate-600 mb-4 italic">
+            If I had to describe this game in one word, it would be "☕"<br />
+            <span className="text-sm">(That's charades for "Please fuel my coding caffeine addiction")</span>
+          </p>
+          <a
+            href="https://buymeacoffee.com/pienaaranker"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-6 py-3 bg-[#26b0a1] text-white font-semibold rounded-lg hover:bg-[#229e91] transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <span className="mr-2">☕</span>
+            Buy Me a Coffee
+          </a>
+        </div>
       </div>
     </div>
   );
