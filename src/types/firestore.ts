@@ -4,17 +4,25 @@
 export interface Game {
   id: string; // Document ID
   code: string; // 4-character alphanumeric game code
-  state: 'lobby' | 'round1' | 'round2' | 'round3' | 'finished';
-  currentRound: 1 | 2 | 3 | null;
-  activeTeamId: string | null; // ID of the team whose turn it is
-  activePlayerId: string | null; // ID of the player whose turn it is within the active team
-  turnOrder: string[]; // Array of team IDs in the order they take turns
-  createdAt: Date; // Or Firebase Timestamp
-  turnStartTime?: number | null; // Timestamp when the current turn started
-  lastSpeakerIds?: { [teamId: string]: string }; // Maps team IDs to their last active speaker's ID
-  lastGuessedWord?: { text: string; teamId: string; timestamp: number } | null; // Info about the last correctly guessed word
-  turnState: 'paused' | 'active' | null; // Tracks if we're in the pause state between turns
-  // Potentially add hostId if needed for specific controls
+  hostId: string;
+  state: 'lobby' | 'playing' | 'completed';
+  currentRound?: 1 | 2 | 3;
+  activeTeamId?: string;
+  turnState?: 'paused' | 'active';
+  turnStartTime?: any; // Firestore Timestamp
+  lastGuessedWord?: {
+    text: string;
+    teamId: string;
+    timestamp: number;
+  };
+  generatedWords: {
+    [wordId: string]: {
+      word: string;
+      category?: string;
+      generatedAt: any; // Firestore Timestamp
+    }
+  };
+  createdAt: any; // Firestore Timestamp
 }
 
 /**
@@ -32,9 +40,10 @@ export interface Team {
 export interface Player {
   id: string; // Document ID (could be Firebase Auth UID if using auth)
   name: string;
-  teamId: string | null; // ID of the team the player belongs to
-  isHost?: boolean; // Optional: Flag if this player created the game
-  joinedAt: Date; // Or Firebase Timestamp
+  teamId?: string;
+  isHost: boolean;
+  assignedCategory?: string;
+  joinedAt: any; // Firestore Timestamp
 }
 
 /**

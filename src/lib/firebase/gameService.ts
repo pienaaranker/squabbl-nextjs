@@ -4,6 +4,7 @@ import type { Game, Player, Team, Word } from "@/types/firestore"; // Import all
 import { GameVerificationService } from "./gameVerificationService"; // Import verification service
 import { generateGameCode } from "../utils/gameCode"; // Import code generation utility
 import { generateWords } from '../services/geminiService';
+import { WORD_CATEGORIES } from '../utils/wordCategories';
 
 // Add new types for turn sequence
 interface Turn {
@@ -109,27 +110,50 @@ export async function addHostToGame(gameId: string, playerData: Pick<Player, 'na
 // export async function updateGameState(gameId: string, newState: Partial<Game>) { ... }
 
 /**
- * Adds a new player subdocument to a specific game document in Firestore.
- * @param {string} gameId - The ID of the game to add the player to.
- * @param {Pick<Player, 'name'>} playerData - The data for the new player (just name initially).
- * @returns {Promise<string>} The ID of the newly created player document.
- * @throws {Error} If there's an issue creating the document.
+ * Adds a new player to the game
+ * @param gameId - The ID of the game to add the player to
+ * @param playerName - The display name for the new player
+ * @returns The ID of the newly created player
  */
-export async function addPlayerToGame(gameId: string, playerData: Pick<Player, 'name'>): Promise<string> {
+export async function addPlayerToGame(
+  gameId: string,
+  playerName: string
+): Promise<string> {
   try {
-    const playersCollectionRef = collection(db, "games", gameId, "players");
-    const newPlayerData = {
-      ...playerData,
-      teamId: null, // Player starts without a team
-      isHost: false, // Assume not host by default, might need adjustment later
-      joinedAt: serverTimestamp() as any,
+    // Check if game exists
+    const gameRef = doc(db, "games", gameId);
+    const gameSnap = await getDoc(gameRef);
+    if (!gameSnap.exists()) {
+      throw new Error("Game not found");
+    }
+
+    // Get existing players to check if this is the first player (host)
+    const playersQuery = query(collection(db, "games", gameId, "players"));
+    const playersSnap = await getDocs(playersQuery);
+    const isHost = playersSnap.empty;
+
+    // Assign a random category that hasn't been assigned yet
+    const existingPlayers = playersSnap.docs.map(doc => doc.data() as Player);
+    const usedCategories = existingPlayers.map(p => p.assignedCategory).filter(Boolean);
+    const availableCategories = WORD_CATEGORIES.filter(c => !usedCategories.includes(c.name));
+    const randomCategory = availableCategories.length > 0 
+      ? availableCategories[Math.floor(Math.random() * availableCategories.length)]
+      : WORD_CATEGORIES[Math.floor(Math.random() * WORD_CATEGORIES.length)];
+
+    // Create the new player document
+    const playerData: Omit<Player, 'id'> = {
+      name: playerName.trim(),
+      isHost,
+      assignedCategory: randomCategory.name,
+      joinedAt: serverTimestamp()
     };
-    const docRef = await addDoc(playersCollectionRef, newPlayerData);
-    console.log(`Player '${playerData.name}' added to game ${gameId} with ID: ${docRef.id}`);
-    return docRef.id;
+
+    const playerRef = await addDoc(collection(db, "games", gameId, "players"), playerData);
+    console.log(`Player ${playerName} added to game ${gameId}`);
+    return playerRef.id;
   } catch (error) {
-    console.error(`Error adding player to game ${gameId}:`, error);
-    throw new Error("Failed to add player.");
+    console.error("Error adding player:", error);
+    throw error instanceof Error ? error : new Error("Failed to add player");
   }
 }
 
@@ -280,21 +304,23 @@ export async function getWordCount(gameId: string): Promise<number> {
 }
 
 /**
- * Adds a set of AI-generated words to the game.
- * @param {string} gameId - The ID of the game.
- * @param {string} playerId - The ID of the player requesting AI words.
- * @param {string} description - Description of the type of words to generate (optional).
- * @param {number} count - Number of words to generate (default: 5).
- * @returns {Promise<string[]>} The IDs of the newly created word documents.
+ * Adds AI-generated words to the game
+ * @param gameId - The ID of the game
+ * @param playerId - The ID of the player requesting AI words
+ * @param description - Optional description for word generation
+ * @param count - Number of words to generate (default: 5)
+ * @returns Array of word IDs
  */
 export async function addAIWords(
-  gameId: string, 
-  playerId: string, 
-  description: string = '', 
+  gameId: string,
+  playerId: string,
+  description: string = '',
   count: number = 5
 ): Promise<string[]> {
   try {
-    // Check current word count for this player
+    console.log('🎲 Starting AI word generation:', { gameId, playerId, description, count });
+
+    // Get player's current words and check limit
     const playerWords = await getPlayerWords(gameId, playerId);
     const remainingSlots = 5 - playerWords.length;
     
@@ -302,21 +328,95 @@ export async function addAIWords(
       throw new Error("You've reached the maximum limit of 5 words per player.");
     }
 
-    // Adjust count to not exceed the remaining slots
+    // Adjust count to not exceed remaining slots
     const adjustedCount = Math.min(count, remainingSlots);
-    
-    // Generate words using Gemini
-    const words = await generateWords(description, adjustedCount);
-    
-    // Add the words to the game
-    const wordIds: string[] = [];
-    for (const word of words) {
-      const wordId = await addWord(gameId, playerId, word);
-      wordIds.push(wordId);
+
+    // Get all existing words for context
+    const allWords = await getAllWords(gameId);
+    const existingWords = allWords.map(w => w.text.toLowerCase());
+
+    // Get player info for category context
+    const playerRef = doc(db, "games", gameId, "players", playerId);
+    const playerSnap = await getDoc(playerRef);
+    if (!playerSnap.exists()) {
+      throw new Error("Player not found");
     }
+    const player = playerSnap.data() as Player;
+    
+    console.log('👤 Player data:', {
+      playerId,
+      category: player.assignedCategory,
+      existingWordsCount: existingWords.length
+    });
+
+    // Get team info if player is in a team
+    let team: Team | undefined;
+    if (player.teamId) {
+      const teamRef = doc(db, "games", gameId, "teams", player.teamId);
+      const teamSnap = await getDoc(teamRef);
+      if (teamSnap.exists()) {
+        team = { ...teamSnap.data() as Team, id: teamSnap.id };
+      }
+    }
+
+    // Generate words with context
+    const words = await generateWords(description, adjustedCount, {
+      gameId,
+      playerId,
+      previouslyGeneratedWords: existingWords,
+      playerCategory: player.assignedCategory,
+      teamName: team?.name
+    });
+
+    console.log('✨ Generated words:', { words, count: words.length });
+
+    // Add words to the game
+    const wordIds: string[] = [];
+    const gameRef = doc(db, "games", gameId);
+    
+    for (const word of words) {
+      // Add to words collection
+      const wordRef = await addDoc(collection(db, "games", gameId, "words"), {
+        text: word,
+        submittedByPlayerId: playerId,
+      });
+      wordIds.push(wordRef.id);
+
+      // Only update generatedWords if we have a valid category
+      if (player.assignedCategory) {
+        // Update game's generatedWords tracking
+        await updateDoc(gameRef, {
+          [`generatedWords.${wordRef.id}`]: {
+            word,
+            category: player.assignedCategory,
+            generatedAt: serverTimestamp()
+          }
+        });
+      } else {
+        // If no category, still track the word but without category field
+        await updateDoc(gameRef, {
+          [`generatedWords.${wordRef.id}`]: {
+            word,
+            generatedAt: serverTimestamp()
+          }
+        });
+      }
+
+      console.log('✅ Added word:', {
+        wordId: wordRef.id,
+        word,
+        category: player.assignedCategory || 'none'
+      });
+    }
+
     return wordIds;
   } catch (error) {
-    console.error(`Error adding AI words to game ${gameId}:`, error);
+    console.error('❌ Error adding AI words:', {
+      error,
+      gameId,
+      playerId,
+      description
+    });
     throw error instanceof Error ? error : new Error("Failed to add AI words.");
   }
 }
