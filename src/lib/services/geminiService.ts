@@ -68,27 +68,46 @@ export async function generateWords(
       description = `Generate words related to ${randomCategory.name}. Use these as examples but don't repeat them: ${randomCategory.examples.join(', ')}`;
     }
 
-    // Enhanced prompt with more specific instructions
-    const prompt = `Generate exactly ${count} unique, family-friendly words based on this description: "${description}".
-    Requirements:
-    - Include a mix of word types:
-      * ${Math.ceil(count/2)} nouns (objects or concepts)
-      * ${Math.floor(count/4)} verbs (actions)
-      * ${Math.floor(count/4)} descriptive words or proper nouns
-    ${context?.previouslyGeneratedWords?.length ? 
-      `- Words must be different from: ${context.previouslyGeneratedWords.join(', ')}` : 
-      ''}
-    - Each word should be easy to:
-      * Describe verbally
-      * Act out in charades
-      * Hint at with one word
-    - Keep words family-friendly and appropriate for all ages
-    - Return ONLY the words, one per line, with their type in parentheses
-    Example format:
-    basketball (noun)
-    dance (verb)
-    fluffy (adjective)
-    Disney (proper noun)`;
+    // Enhanced prompt with more specific instructions and language awareness
+    const prompt = `You are a word generator that ONLY outputs words in the format specified.
+
+INTERNAL INSTRUCTIONS (DO NOT OUTPUT THESE):
+1. Analyze this description for both language and topic: "${description}"
+2. Generate ${count} words that are:
+   - In the SAME LANGUAGE as the description
+   - Related to the TOPIC/THEME from the description
+3. Format each word with its type in parentheses
+4. Output ONLY the formatted words, one per line
+5. DO NOT include any explanations, headers, or additional text
+6. DO NOT number the words or add any prefixes
+
+REQUIREMENTS FOR WORD GENERATION:
+- Generate exactly ${count} words that match both the language and theme of the description
+- Include this mix:
+  * ${Math.ceil(count/2)} nouns (objects or concepts)
+  * ${Math.floor(count/4)} verbs (actions)
+  * ${Math.floor(count/4)} descriptive words or proper nouns
+${context?.previouslyGeneratedWords?.length ? 
+  `- Avoid these words: ${context.previouslyGeneratedWords.join(', ')}` : 
+  ''}
+- Words must be:
+  * Easy to describe verbally
+  * Possible to act out
+  * Family-friendly (unless the description alludes to it not being family-friendly)
+  * In the same language throughout
+  * Relevant to the description's topic/theme
+
+OUTPUT FORMAT (EXACTLY LIKE THIS, ONE WORD PER LINE):
+word (type)
+word (type)
+
+EXAMPLE OUTPUT:
+basketball (noun)
+dance (verb)
+fluffy (adjective)
+Disney (proper noun)
+
+YOUR RESPONSE (ONLY WORDS):`;
 
     console.log('🤖 Sending prompt to Gemini:', {
       promptLength: prompt.length,
@@ -98,6 +117,9 @@ export async function generateWords(
         descriptive: Math.floor(count/4)
       }
     });
+
+    // Log the full prompt
+    console.log('📝 Full prompt:', '\n' + prompt);
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
