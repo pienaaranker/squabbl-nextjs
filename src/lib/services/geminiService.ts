@@ -1,28 +1,21 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GenerationContext, WORD_CATEGORIES } from "../utils/wordCategories";
+import { WORD_CATEGORIES, type GenerationContext } from '../utils/wordCategories';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 /**
- * Generates unique words based on description and context
+ * Generates words based on a description using Gemini
  * @param description - User's description of the type of words they want
  * @param count - Number of words to generate (default: 5)
- * @param context - Generation context including game state and previous words
+ * @param context - Optional generation context with category and previous words
  * @returns Array of generated words
  */
 export async function generateWords(
-  description: string = '',
+  description: string, 
   count: number = 5,
   context?: GenerationContext
 ): Promise<string[]> {
-  console.log('🎲 Starting word generation:', {
-    description,
-    count,
-    playerCategory: context?.playerCategory,
-    teamName: context?.teamName
-  });
-
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
     
@@ -125,67 +118,30 @@ YOUR RESPONSE (ONLY WORDS):`;
     const response = await result.response;
     const text = response.text();
     
-    console.log('✨ Raw Gemini response:', text);
-    
-    // Parse and clean up the response
+    // Split the response into lines and clean up
     const words = text
       .split('\n')
-      .map(line => line.replace(/\s*\([^)]*\)/, '').trim()) // Remove the type annotations
-      .filter(word => 
-        word.length > 0 && 
-        (!context?.previouslyGeneratedWords?.includes(word.toLowerCase()))
-      )
-      .slice(0, count);
+      .map(word => word.trim())
+      .filter(word => word.length > 0)
+      .map(word => word.replace(/\s*\([^)]*\)/, '')) // Remove the (type) annotations
+      .slice(0, count); // Ensure we only get the requested number of words
     
-    console.log('✅ Processed words:', {
-      requested: count,
-      generated: words.length,
-      words
-    });
+    // If we didn't get enough words, pad with some defaults
+    const defaultWords = [
+      "pizza", "dog", "cat", "beach", "mountain", "guitar", "piano", "dance",
+      "sing", "jump", "run", "swim", "bicycle", "car", "airplane", "train"
+    ];
     
-    // If we didn't get enough words, pad with category-specific defaults
-    if (words.length < count && context?.playerCategory) {
-      console.log('⚠️ Not enough words generated, attempting to pad with defaults');
-      
-      const category = WORD_CATEGORIES.find(c => c.name === context.playerCategory);
-      if (category) {
-        console.log('🔄 Using category defaults:', {
-          category: category.name,
-          availableExamples: category.examples
-        });
-        
-        const availableDefaults = category.examples.filter(w => 
-          !words.includes(w) && 
-          !context.previouslyGeneratedWords?.includes(w)
-        );
-        
-        while (words.length < count && availableDefaults.length > 0) {
-          const randomDefault = availableDefaults.splice(
-            Math.floor(Math.random() * availableDefaults.length), 
-            1
-          )[0];
-          words.push(randomDefault);
-          console.log('➕ Added default word:', randomDefault);
-        }
-      } else {
-        console.warn('⚠️ Could not find category for defaults:', context.playerCategory);
+    while (words.length < count) {
+      const randomDefault = defaultWords[Math.floor(Math.random() * defaultWords.length)];
+      if (!words.includes(randomDefault)) {
+        words.push(randomDefault);
       }
     }
     
-    console.log('🏁 Final word list:', {
-      count: words.length,
-      words,
-      description: description.substring(0, 100) + (description.length > 100 ? '...' : '')
-    });
-    
     return words;
   } catch (error) {
-    console.error('❌ Error generating words:', {
-      error,
-      description,
-      playerCategory: context?.playerCategory,
-      previousWords: context?.previouslyGeneratedWords
-    });
+    console.error('Error generating words with Gemini:', error);
     throw new Error('Failed to generate words. Please try again.');
   }
 } 

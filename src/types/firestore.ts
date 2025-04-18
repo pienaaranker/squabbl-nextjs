@@ -35,6 +35,7 @@ export interface Player {
   teamId: string | null; // ID of the team the player belongs to
   isHost?: boolean; // Optional: Flag if this player created the game
   joinedAt: Date; // Or Firebase Timestamp
+  assignedCategory?: string; // The assigned word category for this player
 }
 
 /**
