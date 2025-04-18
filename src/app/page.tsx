@@ -1,11 +1,12 @@
 "use client"; // Required for useState and useRouter hooks
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Removed Image import as it's not used in the new structure yet
 // import Image from "next/image";
 import { createNewGame, addHostToGame, findGameByCode } from "@/lib/firebase/gameService";
 import { isValidGameCode, formatGameCode } from "@/lib/utils/gameCode";
+import { getFeatureFlag } from "@/lib/firebase/featureService";
 
 export default function Home() {
   const router = useRouter();
@@ -14,6 +15,19 @@ export default function Home() {
   const [joinGameCode, setJoinGameCode] = useState('');
   const [hostName, setHostName] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const [showDonationButton, setShowDonationButton] = useState(false);
+
+  useEffect(() => {
+    // Check if donations feature is enabled
+    const checkDonationsFeature = async () => {
+      console.log("Checking donations feature flag...");
+      const isEnabled = await getFeatureFlag('donations.active');
+      console.log("Donations feature flag value:", isEnabled);
+      setShowDonationButton(isEnabled);
+    };
+
+    checkDonationsFeature();
+  }, []);
 
   const handleCreateGame = async () => {
     if (!hostName.trim()) {
@@ -188,21 +202,23 @@ export default function Home() {
         </div>
 
         {/* Buy Me a Coffee Button */}
-        <div className="mt-12 flex flex-col items-center text-center">
-          <p className="text-slate-600 mb-4 italic">
-            If I had to describe this game in one word, it would be "☕"<br />
-            <span className="text-sm">(That's charades for "Please fuel my coding caffeine addiction")</span>
-          </p>
-          <a
-            href="https://buymeacoffee.com/pienaaranker"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-6 py-3 bg-[#26b0a1] text-white font-semibold rounded-lg hover:bg-[#229e91] transition-colors duration-200 shadow-md hover:shadow-lg"
-          >
-            <span className="mr-2">☕</span>
-            Buy Me a Coffee
-          </a>
-        </div>
+        {showDonationButton && (
+          <div className="mt-12 flex flex-col items-center text-center">
+            <p className="text-slate-600 mb-4 italic">
+              If I had to describe this game in one word, it would be "☕"<br />
+              <span className="text-sm">(That's charades for "Please fuel my coding caffeine addiction")</span>
+            </p>
+            <a
+              href="https://buymeacoffee.com/pienaaranker"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-6 py-3 bg-[#26b0a1] text-white font-semibold rounded-lg hover:bg-[#229e91] transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
+              <span className="mr-2">☕</span>
+              Buy Me a Coffee
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
