@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import dynamic from 'next/dynamic';
 
 const Footer = dynamic(() => import('./components/Footer'), { ssr: true });
+// const Header = dynamic(() => import('./components/Header'), { ssr: true }); // Commented out Header import
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -60,6 +61,7 @@ export default function RootLayout({
             },
           }}
         />
+        {/* <Header /> // Commented out Header component */}
         <main className="flex-1 container mx-auto py-8">
           {children}
         </main>

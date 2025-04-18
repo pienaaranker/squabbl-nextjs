@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { doc, onSnapshot, collection, query, orderBy, where, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, orderBy, where, updateDoc, serverTimestamp, increment } from "firebase/firestore";
 import { db } from '@/lib/firebase/config';
 import toast from 'react-hot-toast';
 import type { Game, Team, Player, Word } from '@/types/firestore';
@@ -18,6 +18,9 @@ import {
   getWordCountsForRound,
   endGame
 } from '@/lib/firebase/gameService';
+import { motion } from 'framer-motion';
+import { pageVariants } from '@/lib/animations';
+import { Grid } from '@/app/components/layouts/Grid';
 import Card from '@/app/components/Card';
 import Button from '@/app/components/Button';
 import Badge from '@/app/components/Badge';
@@ -25,7 +28,6 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import Timer from '@/app/components/Timer';
 import TeamCard from '@/app/components/TeamCard';
 import WordCard from '@/app/components/WordCard';
-import CurrentTurnInfo from '@/app/components/CurrentTurnInfo';
 
 export default function GamePage() {
   const params = useParams<{ gameId: string }>();
@@ -295,8 +297,16 @@ export default function GamePage() {
       // Mark word as guessed
       await markWordAsGuessed(gameId, currentWord.id, game.currentRound);
       
-      // Update team score
-      await updateTeamScore(gameId, game.activeTeamId, 1);
+      // Update team score and last guessed word
+      const gameRef = doc(db, "games", gameId);
+      await updateDoc(gameRef, {
+        [`teams.${game.activeTeamId}.score`]: increment(1),
+        lastGuessedWord: {
+          text: currentWord.text,
+          teamId: game.activeTeamId,
+          timestamp: Date.now()
+        }
+      });
       
       // Check if all words are guessed
       const allGuessed = await areAllWordsGuessedInRound(gameId, game.currentRound);
@@ -319,8 +329,6 @@ export default function GamePage() {
         // Update word counts
         const counts = await getWordCountsForRound(gameId, game.currentRound);
         setWordCounts(counts);
-        
-        toast.success("Correct! +1 point");
       }
     } catch (error) {
       console.error("Error handling correct guess:", error);
@@ -330,20 +338,45 @@ export default function GamePage() {
     }
   };
   
+  // Effect to show toast when a word is guessed correctly
+  useEffect(() => {
+    const lastGuessed = game?.lastGuessedWord;
+    if (lastGuessed?.text && lastGuessed.teamId) {
+      const activeTeam = teams.find(team => team.id === lastGuessed.teamId);
+      toast.success(`${activeTeam?.name} guessed "${lastGuessed.text}" correctly!`);
+    }
+  }, [game?.lastGuessedWord?.timestamp]);
+  
   // Handle skip
   const handleSkip = async () => {
     if (!currentWord || !game?.currentRound) return;
     
     setIsSkipProcessing(true);
     try {
-      // Skip the word (it stays in the pot)
+      // Calculate the new remaining time after penalty
+      const now = Date.now();
+      const currentTurnStart = game.turnStartTime || now;
+      const currentTimeLeft = Math.max(0, 60 - Math.floor((now - currentTurnStart) / 1000));
+      
+      // If penalty would reduce time below 0, end the turn
+      if (currentTimeLeft <= 10) {
+        await advanceToNextTeam(gameId);
+        setCurrentWord(null);
+        toast.error("Time's up! Next team's turn.");
+        return;
+      }
       
       // Get a new word for the current team's turn
       const word = await getRandomUnguessedWord(gameId, game.currentRound);
       setCurrentWord(word);
       
-      // Apply time penalty (10 seconds)
-      setTimeLeft(prev => Math.max(0, prev - 10));
+      // Update turnStartTime to apply the 10-second penalty
+      const gameRef = doc(db, "games", gameId);
+      const newTurnStart = currentTurnStart - (10 * 1000); // Subtract 10 seconds from start time to reduce remaining time
+      
+      await updateDoc(gameRef, {
+        turnStartTime: newTurnStart
+      });
       
       toast.error("Word skipped! -10 seconds");
     } catch (error) {
@@ -379,77 +412,93 @@ export default function GamePage() {
   }
   
   return (
-    <div className="min-h-screen bg-softwhite p-6">
-      <header className="mb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-slate-800">Squabbl</h1>
-          
-          {/* Debug Player ID Badge */}
-          <div className="bg-gray-100 border border-gray-300 text-xs p-2 rounded-md">
-            <div><strong>Debug Info:</strong></div>
-            <div><strong>Player:</strong> {getCurrentPlayer()?.name || 'Unknown'}</div>
-            <div><strong>ID:</strong> <span className="font-mono">{playerId?.substring(0, 8) || 'None'}</span></div>
-            <div><strong>Host:</strong> {getCurrentPlayer()?.isHost ? 'Yes' : 'No'}</div>
-            <div><strong>Team:</strong> {getPlayerTeam()?.name || 'None'}</div>
-          </div>
-        </div>
-        
-        <div className="flex justify-between items-center mt-2">
-          <h2 className="text-xl font-semibold text-slate-800">
-            Round {game?.currentRound || '?'}: {getRoundName(game?.currentRound ?? null)}
-          </h2>
-          <Badge variant="info" size="lg" rounded>
-            Words: {wordCounts.guessed}/{wordCounts.total}
-          </Badge>
-        </div>
-        <p className="text-slate-600 mt-1">{getRoundInstructions(game?.currentRound ?? null)}</p>
-      </header>
-      
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left column: Timer and Word display */}
-        <div className="w-full lg:w-2/3 flex flex-col">
-          {/* Word Card with unified component */}
-          <WordCard 
-            isDescriber={isDescriber}
-            isOnActiveTeam={isOnActiveTeam()}
-            currentWord={currentWord}
-            activePlayerName={getActivePlayerName()}
-            onCorrectGuess={handleCorrectGuess}
-            onSkip={handleSkip}
-            isCorrectGuessProcessing={isCorrectGuessProcessing}
-            isSkipProcessing={isSkipProcessing}
-            seconds={timeLeft}
-            totalSeconds={60}
-            className="mb-6"
-          />
-          
-          {/* Current Turn Info */}
-          <CurrentTurnInfo 
-            teamName={getActiveTeamName()}
-            playerName={getActivePlayerName()}
-            isCurrentPlayer={isDescriber}
-            seconds={timeLeft}
-            totalSeconds={60}
-            className="mb-6"
-          />
-        </div>
-        
-        {/* Right column: Teams and Scoreboard */}
-        <div className="w-full lg:w-1/3 flex flex-col">
-          <Card title="Teams & Scores">
-            <div className="space-y-4">
-              {teams.map(team => (
-                <TeamCard 
-                  key={team.id}
-                  team={team}
-                  players={players}
-                  isActive={team.id === game?.activeTeamId}
-                />
-              ))}
+    <motion.div
+      className="min-h-screen bg-background"
+      variants={pageVariants}
+      initial="initial"
+      animate="enter"
+      exit="exit"
+    >
+      <div className="w-full mx-0 sm:container sm:mx-auto p-0 sm:py-4 sm:px-2 md:py-8 md:px-4">
+        <Grid columns={1} gap="xs" animate>
+          {/* Game Info Section */}
+          <Card className="w-full p-1 sm:p-2 md:p-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
+              <div className="flex flex-col gap-1 sm:gap-2">
+                <h3 className="text-xs sm:text-sm font-bold font-poppins">
+                  Round {game?.currentRound || '?'}: {getRoundName(game?.currentRound ?? null)}
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-dark">
+                  {getRoundInstructions(game?.currentRound ?? null)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="info" size="lg" rounded>
+                  Words: {wordCounts.guessed}/{wordCounts.total}
+                </Badge>
+                
+                {/* Debug Player ID Badge - Hidden on mobile */}
+                <div className="hidden sm:block text-xs p-2 rounded-md bg-neutral-light border border-neutral">
+                  <div className="text-neutral-dark">
+                    <div><strong>Player:</strong> {getCurrentPlayer()?.name || 'Unknown'}</div>
+                    <div><strong>Team:</strong> {getPlayerTeam()?.name || 'None'}</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
-        </div>
+
+          {/* Main Game Area */}
+          <div className="flex flex-col lg:flex-row gap-3">
+            {/* Left Column: Word display */}
+            <div className="w-full lg:w-2/3">
+              <WordCard 
+                isDescriber={isDescriber}
+                isOnActiveTeam={isOnActiveTeam()}
+                currentWord={currentWord}
+                activePlayerName={getActivePlayerName()}
+                onCorrectGuess={handleCorrectGuess}
+                onSkip={handleSkip}
+                isCorrectGuessProcessing={isCorrectGuessProcessing}
+                isSkipProcessing={isSkipProcessing}
+                seconds={timeLeft}
+                totalSeconds={60}
+              />
+            </div>
+            
+            {/* Right Column: Teams and Scoreboard */}
+            <div className="w-full lg:w-1/3">
+              <Card className="sticky top-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs sm:text-sm font-bold font-poppins">Teams & Scores</h3>
+                </div>
+                
+                <div className="space-y-2 max-h-[40vh] lg:max-h-[60vh] overflow-y-auto">
+                  {teams.map(team => {
+                    // Filter players for this team
+                    const teamPlayers = players.filter(player => player.teamId === team.id);
+                    // Find active speaker if they belong to this team
+                    const activeSpeakerPlayer = game?.activePlayerId ? 
+                      players.find(p => p.id === game.activePlayerId && p.teamId === team.id) : 
+                      null;
+                    
+                    return (
+                      <TeamCard 
+                        key={team.id}
+                        team={team}
+                        players={teamPlayers}
+                        isActive={team.id === game?.activeTeamId}
+                        activeSpeaker={activeSpeakerPlayer}
+                        showScore={true}
+                      />
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+          </div>
+        </Grid>
       </div>
-    </div>
+    </motion.div>
   );
 } 

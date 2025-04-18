@@ -34,28 +34,33 @@ export default function WordCard({
   if (isDescriber) {
     return (
       <Card 
-        className={`border-2 border-coral-500 relative ${className}`} 
-        title="Your Word"
-        headerClassName="text-center"
+        className={`relative ${className}`}
       >
-        <div className="absolute top-2 right-2 z-10">
-          <Timer seconds={seconds} totalSeconds={totalSeconds} className="scale-50 origin-top-right" />
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs sm:text-sm font-bold font-poppins">Your Word</h3>
+          <Timer 
+            seconds={seconds} 
+            totalSeconds={totalSeconds} 
+            className="scale-75 sm:scale-100"
+          />
         </div>
         
-        <p className="text-center text-3xl font-bold text-coral-600 mb-8">
-          {currentWord?.text || "Loading word..."}
-        </p>
+        <div className="bg-coral-50 border-2 border-coral-200 rounded-lg p-4 mb-4">
+          <p className="text-center text-xl sm:text-2xl font-bold text-coral-600">
+            {currentWord?.text || "Loading word..."}
+          </p>
+        </div>
         
-        <div className="flex gap-6 justify-center items-center">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <Button
             onClick={onCorrectGuess}
             disabled={isCorrectGuessProcessing || !currentWord}
             variant="success"
             size="lg"
-            className="min-w-[160px] shadow-lg bg-[#B0EACD] hover:bg-[#9DDCBF] text-[#2F4F4F]"
+            className="flex-1 bg-[#B0EACD] hover:bg-[#9DDCBF] text-[#2F4F4F] text-sm sm:text-base py-3"
             isLoading={isCorrectGuessProcessing}
             loadingText="Processing..."
-            leftIcon={<span className="text-xl">✓</span>}
+            leftIcon={<span className="text-lg sm:text-xl">✓</span>}
           >
             Correct!
           </Button>
@@ -65,10 +70,10 @@ export default function WordCard({
             disabled={isSkipProcessing || !currentWord}
             variant="warning"
             size="lg"
-            className="min-w-[160px] shadow-lg bg-[#FFD166] hover:bg-[#F5C14F] text-[#2F4F4F]"
+            className="flex-1 bg-[#FFD166] hover:bg-[#F5C14F] text-[#2F4F4F] text-sm sm:text-base py-3"
             isLoading={isSkipProcessing}
             loadingText="Skipping..."
-            leftIcon={<span className="text-xl">⟳</span>}
+            leftIcon={<span className="text-lg sm:text-xl">⟳</span>}
           >
             Skip (-10s)
           </Button>
@@ -78,17 +83,26 @@ export default function WordCard({
   }
   
   return (
-    <Card 
-      className={`relative ${className}`}
-      title={isOnActiveTeam ? "Guess the word!" : "Watch and wait for your team's turn!"}
-      headerClassName="text-center"
-    >
-      <p className="text-center text-xl text-slate-600 mb-2">
-        {isOnActiveTeam 
-          ? "Listen to your teammate's clues and guess the word!"
-          : `${activePlayerName} is trying to get their team to guess the word.`
-        }
-      </p>
+    <Card className={`relative ${className}`}>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs sm:text-sm font-bold font-poppins">
+          {isOnActiveTeam ? "Guess the word!" : "Watch and wait"}
+        </h3>
+        <Timer 
+          seconds={seconds} 
+          totalSeconds={totalSeconds} 
+          className="scale-75 sm:scale-100"
+        />
+      </div>
+      
+      <div className="bg-neutral-50 border-2 border-neutral-200 rounded-lg p-4">
+        <p className="text-center text-sm sm:text-base text-neutral-dark">
+          {isOnActiveTeam 
+            ? "Listen to your teammate's clues and guess the word!"
+            : `${activePlayerName} is trying to get their team to guess the word.`
+          }
+        </p>
+      </div>
     </Card>
   );
 } 
