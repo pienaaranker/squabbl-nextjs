@@ -32,6 +32,7 @@ export async function createNewGame(): Promise<{id: string, code: string}> {
       activePlayerId: null,
       turnOrder: [],
       createdAt: serverTimestamp() as any, // Use server timestamp
+      turnState: null
     };
 
     const docRef = await addDoc(gamesCollectionRef, newGameData);
@@ -365,7 +366,8 @@ export async function startGame(gameId: string): Promise<void> {
       turnOrder: shuffledTeamIds,
       activeTeamId,
       activePlayerId,
-      turnStartTime: serverTimestamp()
+      turnState: 'paused',
+      turnStartTime: null
     };
     console.log("Update data:", updateData);
     
@@ -520,7 +522,8 @@ export async function advanceToNextTeam(gameId: string): Promise<void> {
     await updateDoc(gameRef, {
       activeTeamId: nextTeamId,
       activePlayerId: nextActivePlayerId,
-      turnStartTime: serverTimestamp(),
+      turnState: 'paused', // Set turn state to paused
+      turnStartTime: null, // Clear turn start time until the new player starts their turn
       [`lastSpeakerIds.${gameData.activeTeamId}`]: gameData.activePlayerId
     });
     
@@ -578,7 +581,8 @@ export async function advanceToNextRound(gameId: string): Promise<void> {
       currentRound: nextRound,
       activeTeamId: firstTeamId,
       activePlayerId: nextActivePlayerId,
-      turnStartTime: serverTimestamp()
+      turnState: 'paused',
+      turnStartTime: null
     });
     
     console.log(`Advanced to round ${nextRound}`);
@@ -774,5 +778,28 @@ export async function getAllPlayers(gameId: string): Promise<Player[]> {
   } catch (error) {
     console.error(`Error getting all players for game ${gameId}:`, error);
     throw new Error("Failed to get all players.");
+  }
+}
+
+export async function createGame(code: string): Promise<string> {
+  try {
+    const gamesCollection = collection(db, "games");
+    const initialGameState = {
+      code,
+      state: "lobby" as const,
+      currentRound: null,
+      activeTeamId: null,
+      activePlayerId: null,
+      turnOrder: [],
+      createdAt: serverTimestamp(),
+      turnState: null
+    };
+    
+    const docRef = await addDoc(gamesCollection, initialGameState);
+    console.log("Created new game with ID:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating game:", error);
+    throw new Error("Failed to create game");
   }
 }
