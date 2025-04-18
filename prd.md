@@ -100,6 +100,60 @@ Squabbl is a digital adaptation of a popular party game designed for families an
 * NFR2.2: Backend data persistence and real-time synchronization (game state, word lists with appropriate privacy controls, scores, player presence, team assignments, session codes) must use Firebase Firestore and potentially Firebase Realtime Database for low-latency updates if needed.
 * NFR2.3: The application must be deployable using Firebase Hosting.
 
+**NFR2.4: File Structure**
+
+```
+squabbl/
+├── app/                        # Next.js app directory
+│   ├── layout.tsx             # Root layout component with providers
+│   ├── page.tsx               # Landing page with game creation
+│   ├── game/                  # Game-related routes
+│   │   ├── [id]/             # Dynamic game session route
+│   │   │   ├── page.tsx      # Main game interface
+│   │   │   └── layout.tsx    # Game session layout
+│   │   └── new/              # New game creation route
+│   │       └── page.tsx      # Game creation form
+│   └── join/                  # Join game route
+│       └── [code]/           # Dynamic join code route
+│           └── page.tsx      # Join game interface
+├── components/                # Reusable React components
+│   ├── ui/                   # Basic UI components
+│   │   ├── Button.tsx       # Custom button component
+│   │   ├── Input.tsx        # Custom input component
+│   │   └── Modal.tsx        # Modal dialog component
+│   ├── game/                 # Game-specific components
+│   │   ├── Lobby.tsx        # Game lobby interface
+│   │   ├── GameBoard.tsx    # Main game board
+│   │   ├── Timer.tsx        # Game timer component
+│   │   ├── TeamList.tsx     # Team management component
+│   │   └── WordPot.tsx      # Word pot visualization
+│   └── forms/                # Form-related components
+│       ├── CreateGame.tsx    # Game creation form
+│       └── JoinGame.tsx      # Game joining form
+├── lib/                      # Utility functions and hooks
+│   ├── firebase/            # Firebase configuration
+│   │   ├── config.ts        # Firebase app config
+│   │   ├── auth.ts          # Authentication utilities
+│   │   └── db.ts            # Database utilities
+│   ├── hooks/               # Custom React hooks
+│   │   ├── useGame.ts       # Game state management
+│   │   ├── useTeams.ts      # Team management
+│   │   └── useWords.ts      # Word pot management
+│   └── utils/               # Helper functions
+│       ├── gameLogic.ts     # Game rules and logic
+│       └── wordGen.ts       # AI word generation
+├── types/                    # TypeScript type definitions
+│   ├── game.ts              # Game-related types
+│   ├── team.ts              # Team-related types
+│   └── user.ts              # User-related types
+├── styles/                   # Global styles
+│   └── globals.css          # Global CSS
+├── public/                   # Static assets
+├── firebase.json            # Firebase configuration
+├── firestore.rules          # Firestore security rules
+└── package.json             # Project dependencies
+```
+
 **NFR3: Performance**
 
 * NFR3.1: UI interactions should be smooth and responsive.
