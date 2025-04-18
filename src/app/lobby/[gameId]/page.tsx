@@ -482,11 +482,11 @@ export default function LobbyPage() {
       animate="enter"
       exit="exit"
     >
-      <div className="container mx-auto py-2 px-1 sm:py-4 sm:px-2 md:py-8 md:px-4">
-        <Grid columns={1} gap="sm" animate>
+      <div className="w-full mx-0 sm:container sm:mx-auto p-0 sm:py-4 sm:px-2 md:py-8 md:px-4">
+        <Grid columns={1} gap="xs" animate>
           {/* Game Info Section */}
-          <Card className="w-full">
-            <div className="flex flex-col sm:flex-row items-start justify-between gap-2 p-2 sm:p-4">
+          <Card className="w-full p-1 sm:p-2 md:p-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
               <div className="flex flex-col gap-1 sm:gap-2">
                 <h3 className="text-xs sm:text-sm font-bold font-poppins">Game Lobby</h3>
                 <p className="text-sm sm:text-base font-medium text-primary">Share code: <span className="font-bold">{game?.code}</span></p>
@@ -520,7 +520,7 @@ export default function LobbyPage() {
           </Card>
 
           {/* Teams Management Card */}
-          <Card className="w-full p-2 sm:p-4">
+          <Card className="w-full p-1 sm:p-2 md:p-4 bg-red-200">
             <div className="flex flex-col sm:flex-row sm:space-y-0 sm:space-x-4 sm:items-center sm:justify-between mb-2">
               <h3 className="text-xs sm:text-sm font-bold font-poppins">Teams</h3>
               {isHost && (
@@ -569,7 +569,7 @@ export default function LobbyPage() {
           </Card>
 
           {/* Consolidated Player Word Management Card */}
-          <Card className="w-full p-2 sm:p-4">
+          <Card className="w-full p-1 sm:p-2 md:p-4 bg-red-200">
             {/* Header with Title */}
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs sm:text-sm font-bold font-poppins">Add Words</h3>
