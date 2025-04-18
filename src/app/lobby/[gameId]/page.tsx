@@ -17,7 +17,6 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
 import { Grid } from '@/app/components/layouts/Grid';
 import { AnimatedIcon } from '@/app/components/ui';
-import WordInput from '@/app/components/WordInput';
 
 export default function LobbyPage() {
   const params = useParams<{ gameId: string }>();
@@ -98,8 +97,8 @@ export default function LobbyPage() {
             setGame(gameData);
             setError(null);
             
-            // Auto-redirect when game starts (state changes from 'lobby' to 'playing')
-            if (previousGameState === 'lobby' && gameData.state === 'playing') {
+            // Auto-redirect when game starts (state changes from 'lobby' to 'round1')
+            if (previousGameState === 'lobby' && gameData.state === 'round1') {
               console.log("🎮 Game started! Redirecting to game screen...");
               toast.success("Game started! Redirecting to game screen...");
               router.push(`/game/${gameId}?playerId=${playerId}`);
@@ -219,7 +218,7 @@ export default function LobbyPage() {
 
   // Effect for checking if the game has started and handling reconnection vs. new joins
   useEffect(() => {
-    if (game && game.state === 'playing') {
+    if (game && game.state !== 'lobby') {
       console.log("🎮 Game already in progress");
       
       // If this is a player who already joined (has playerId), redirect them to the game
@@ -228,6 +227,8 @@ export default function LobbyPage() {
         toast.success("Reconnecting to game in progress...");
         router.push(`/game/${gameId}?playerId=${playerId}`);
       }
+      // If this is a new player trying to join (no playerId), show game in progress message
+      // The UI will handle showing the appropriate message based on game state
     }
   }, [game, gameId, router, playerId]);
 
@@ -381,17 +382,19 @@ export default function LobbyPage() {
   // Handler for joining the game from the lobby
   const handleDirectJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gameId || !newPlayerName.trim()) return;
+    if (!newPlayerName.trim() || !gameId) return;
 
     setJoining(true);
     setJoinError(null);
     try {
-      const playerId = await addPlayerToGame(gameId, newPlayerName.trim());
+      // Add the player to the game
+      const playerId = await addPlayerToGame(gameId, { name: newPlayerName.trim() });
+      
+      // Navigate to the same page but with playerId as a query parameter
       router.push(`/lobby/${gameId}?playerId=${playerId}`);
     } catch (err) {
       console.error("Failed to join game:", err);
       setJoinError(err instanceof Error ? err.message : "Failed to join game");
-    } finally {
       setJoining(false);
     }
   };
@@ -579,20 +582,84 @@ export default function LobbyPage() {
 
           {/* Consolidated Player Word Management Card */}
           <Card className="w-full p-1 sm:p-2 md:p-4 bg-red-200">
-            <WordInput
-              words={words}
-              newWord={newWord}
-              setNewWord={setNewWord}
-              isAddingAIWords={isAddingAIWords}
-              isRemovingWord={isRemovingWord}
-              wordError={wordError}
-              playerId={playerId}
-              players={players}
-              gameState={game?.state ?? 'lobby'}
-              onAddWord={handleAddWord}
-              onAddAIWords={handleAddAIWords}
-              onRemoveWord={handleRemoveWord}
-            />
+            {/* Header with Title */}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs sm:text-sm font-bold font-poppins">Add Words</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-neutral-dark">({words.length}/5)</h3>
+            </div>
+
+            {/* Single Input Form with Two Actions */}
+            <form onSubmit={handleAddWord} className="mb-2">
+              <p className="text-xs text-neutral-dark mb-1">
+                Enter a word to add manually, or describe words you'd like AI to generate (max 5 words per player)
+              </p>
+              <div className="flex flex-col sm:flex-row items-stretch gap-2">
+                <input
+                  type="text"
+                  value={newWord}
+                  onChange={(e) => setNewWord(e.target.value)}
+                  className="p-2 border-2 rounded-lg grow text-sm"
+                  placeholder="e.g., 'beach' or 'summer vacation words'"
+                  disabled={words.length >= 5}
+                />
+                <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    isLoading={isAddingAIWords}
+                    className="grow sm:grow-0 h-10"
+                    rightIcon={<span>✏️</span>}
+                    disabled={!newWord.trim() || words.length >= 5 || isAddingAIWords}
+                  >
+                    Add Word
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={handleAddAIWords}
+                    disabled={isAddingAIWords || !playerId || game?.state !== 'lobby' || words.length >= 5}
+                    className="grow sm:grow-0 h-10"
+                    rightIcon={<AnimatedIcon icon="🤖" />}
+                  >
+                    Generate
+                  </Button>
+                </div>
+              </div>
+            </form>
+            
+            {/* Display Existing Player Words */}
+            <AnimatePresence>
+              <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-2 mt-2">
+                {words.map((word, index) => (
+                  <motion.div
+                    key={word.id}
+                    variants={listItemVariants}
+                    custom={index}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="relative group bg-white rounded-lg border-2 border-neutral-light hover:border-primary transition-colors p-2 flex justify-between items-center"
+                  >
+                    <p className="font-medium text-sm break-all pr-2">{word.text}</p>
+                    <motion.button
+                      className="p-1.5 rounded-full text-neutral hover:text-red-500 hover:bg-red-50 transition-colors"
+                      onClick={() => handleRemoveWord(word.id)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label={`Remove word ${word.text}`}
+                      disabled={isRemovingWord === word.id}
+                    >
+                      { isRemovingWord === word.id ? <LoadingSpinner size="sm" /> : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )}
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+            {wordError && <p className="text-red-500 text-sm mt-2">{wordError}</p>}
+
           </Card>
 
           {/* Game Start Requirements */}
