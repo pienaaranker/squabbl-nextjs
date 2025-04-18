@@ -3,6 +3,7 @@ import { db } from "./config"; // Import the initialized db instance
 import type { Game, Player, Team, Word } from "@/types/firestore"; // Import all types
 import { GameVerificationService } from "./gameVerificationService"; // Import verification service
 import { generateGameCode } from "../utils/gameCode"; // Import code generation utility
+import { generateWords } from '../services/geminiService';
 
 /**
  * Creates a new game session document in Firestore.
@@ -176,6 +177,12 @@ export async function updatePlayerTeam(gameId: string, playerId: string, teamId:
  */
 export async function addWord(gameId: string, playerId: string, wordText: string): Promise<string> {
   try {
+    // Check current word count for this player
+    const playerWords = await getPlayerWords(gameId, playerId);
+    if (playerWords.length >= 5) {
+      throw new Error("You've reached the maximum limit of 5 words per player.");
+    }
+
     const wordsCollectionRef = collection(db, "games", gameId, "words");
     const newWordData: Omit<Word, 'id'> = {
       text: wordText.trim(),
@@ -186,7 +193,7 @@ export async function addWord(gameId: string, playerId: string, wordText: string
     return docRef.id;
   } catch (error) {
     console.error(`Error adding word to game ${gameId}:`, error);
-    throw new Error("Failed to add word.");
+    throw error instanceof Error ? error : new Error("Failed to add word.");
   }
 }
 
@@ -265,42 +272,41 @@ export async function getWordCount(gameId: string): Promise<number> {
  * Adds a set of AI-generated words to the game.
  * @param {string} gameId - The ID of the game.
  * @param {string} playerId - The ID of the player requesting AI words.
+ * @param {string} description - Description of the type of words to generate (optional).
  * @param {number} count - Number of words to generate (default: 5).
  * @returns {Promise<string[]>} The IDs of the newly created word documents.
  */
-export async function addAIWords(gameId: string, playerId: string, count: number = 5): Promise<string[]> {
-  // Use a predefined list of common words for the game
-  const commonWords = [
-    "pizza", "dog", "cat", "beach", "mountain", "guitar", "piano", "dance", "sing", "jump",
-    "run", "swim", "bicycle", "car", "airplane", "train", "ship", "book", "movie", "game",
-    "football", "basketball", "tennis", "golf", "chess", "cooking", "baking", "painting", "drawing", "photography",
-    "flower", "tree", "river", "ocean", "sun", "moon", "star", "cloud", "rain", "snow",
-    "phone", "computer", "television", "camera", "watch", "shoes", "hat", "glasses", "shirt", "pants"
-  ];
-  
-  // Randomly select 'count' words
-  const selectedWords = [];
-  const usedIndices = new Set();
-  
-  while (selectedWords.length < count && usedIndices.size < commonWords.length) {
-    const randomIndex = Math.floor(Math.random() * commonWords.length);
-    if (!usedIndices.has(randomIndex)) {
-      usedIndices.add(randomIndex);
-      selectedWords.push(commonWords[randomIndex]);
-    }
-  }
-  
-  // Add the words to the game
-  const wordIds: string[] = [];
+export async function addAIWords(
+  gameId: string, 
+  playerId: string, 
+  description: string = '', 
+  count: number = 5
+): Promise<string[]> {
   try {
-    for (const word of selectedWords) {
+    // Check current word count for this player
+    const playerWords = await getPlayerWords(gameId, playerId);
+    const remainingSlots = 5 - playerWords.length;
+    
+    if (remainingSlots <= 0) {
+      throw new Error("You've reached the maximum limit of 5 words per player.");
+    }
+
+    // Adjust count to not exceed the remaining slots
+    const adjustedCount = Math.min(count, remainingSlots);
+    
+    // Generate words using Gemini
+    const words = await generateWords(description, adjustedCount);
+    
+    // Add the words to the game
+    const wordIds: string[] = [];
+    for (const word of words) {
       const wordId = await addWord(gameId, playerId, word);
       wordIds.push(wordId);
     }
     return wordIds;
   } catch (error) {
     console.error(`Error adding AI words to game ${gameId}:`, error);
-    throw new Error("Failed to add AI words.");
+    throw error instanceof Error ? error : new Error("Failed to add AI words.");
   }
 }
 

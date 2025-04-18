@@ -35,8 +35,6 @@ export default function LobbyPage() {
   const [allWordsCount, setAllWordsCount] = useState(0); // Total word count
   const [newTeamName, setNewTeamName] = useState('');
   const [newWord, setNewWord] = useState('');
-  const [isAddingTeam, setIsAddingTeam] = useState(false);
-  const [isAddingWord, setIsAddingWord] = useState(false);
   const [isAddingAIWords, setIsAddingAIWords] = useState(false);
   const [isRemovingWord, setIsRemovingWord] = useState<string | null>(null);
   const [addTeamError, setAddTeamError] = useState<string | null>(null);
@@ -239,16 +237,12 @@ export default function LobbyPage() {
     e.preventDefault();
     if (!newTeamName.trim() || !gameId) return;
 
-    setIsAddingTeam(true);
-    setAddTeamError(null);
     try {
       await addTeamToGame(gameId, { name: newTeamName.trim() });
       setNewTeamName(''); // Clear input field on success
     } catch (err) {
       console.error("Failed to add team:", err);
       setAddTeamError(err instanceof Error ? err.message : "Could not add team.");
-    } finally {
-      setIsAddingTeam(false);
     }
   };
 
@@ -290,7 +284,6 @@ export default function LobbyPage() {
     e.preventDefault();
     if (!newWord.trim() || !gameId || !playerId) return;
 
-    setIsAddingWord(true);
     setWordError(null);
     try {
       await addWord(gameId, playerId, newWord.trim());
@@ -301,8 +294,6 @@ export default function LobbyPage() {
     } catch (err) {
       console.error("Failed to add word:", err);
       setWordError(err instanceof Error ? err.message : "Failed to add word.");
-    } finally {
-      setIsAddingWord(false);
     }
   };
 
@@ -313,13 +304,18 @@ export default function LobbyPage() {
     setIsAddingAIWords(true);
     setWordError(null);
     try {
-      await addAIWords(gameId, playerId);
+      // Pass the current input text as the description
+      await addAIWords(gameId, playerId, newWord.trim());
+      // Clear input field after successful generation
+      setNewWord('');
       // Refresh player words
       const playerWords = await getPlayerWords(gameId, playerId);
       setWords(playerWords);
+      toast.success('AI generated words added successfully!');
     } catch (err) {
       console.error("Failed to add AI words:", err);
       setWordError(err instanceof Error ? err.message : "Failed to add AI words.");
+      toast.error('Failed to generate words. Please try again.');
     } finally {
       setIsAddingAIWords(false);
     }
@@ -535,7 +531,7 @@ export default function LobbyPage() {
                   <Button
                     variant="primary"
                     type="submit"
-                    isLoading={isAddingTeam}
+                    isLoading={isAddingAIWords}
                     className="flex-shrink-0"
                   >
                     Add Team
@@ -573,13 +569,13 @@ export default function LobbyPage() {
             {/* Header with Title */}
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs sm:text-sm font-bold font-poppins">Add Words</h3>
-              <h3 className="text-xs sm:text-sm font-bold text-neutral-dark">({words.length})</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-neutral-dark">({words.length}/5)</h3>
             </div>
 
             {/* Single Input Form with Two Actions */}
             <form onSubmit={handleAddWord} className="mb-2">
               <p className="text-xs text-neutral-dark mb-1">
-                Enter a word to add manually, or describe words you'd like AI to generate
+                Enter a word to add manually, or describe words you'd like AI to generate (max 5 words per player)
               </p>
               <div className="flex flex-col sm:flex-row items-stretch gap-2">
                 <input
@@ -588,22 +584,23 @@ export default function LobbyPage() {
                   onChange={(e) => setNewWord(e.target.value)}
                   className="p-2 border-2 rounded-lg grow text-sm"
                   placeholder="e.g., 'beach' or 'summer vacation words'"
+                  disabled={words.length >= 5}
                 />
                 <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
                   <Button
                     variant="primary"
                     type="submit"
-                    isLoading={isAddingWord}
+                    isLoading={isAddingAIWords}
                     className="grow sm:grow-0 h-10"
                     rightIcon={<span>✏️</span>}
-                    disabled={!newWord.trim()}
+                    disabled={!newWord.trim() || words.length >= 5 || isAddingAIWords}
                   >
                     Add Word
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={handleAddAIWords}
-                    disabled={isAddingAIWords || !playerId || game?.state !== 'lobby'}
+                    disabled={isAddingAIWords || !playerId || game?.state !== 'lobby' || words.length >= 5}
                     className="grow sm:grow-0 h-10"
                     rightIcon={<AnimatedIcon icon="🤖" />}
                   >
@@ -624,11 +621,11 @@ export default function LobbyPage() {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="relative group bg-white rounded-lg border-2 border-neutral-light group-hover:border-primary transition-colors p-2"
+                    className="relative group bg-white rounded-lg border-2 border-neutral-light hover:border-primary transition-colors p-2 flex justify-between items-center"
                   >
-                    <p className="font-medium text-sm break-all">{word.text}</p>
+                    <p className="font-medium text-sm break-all pr-2">{word.text}</p>
                     <motion.button
-                      className="absolute top-1 right-1 p-1 text-neutral hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1.5 rounded-full text-neutral hover:text-red-500 hover:bg-red-50 transition-colors"
                       onClick={() => handleRemoveWord(word.id)}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
@@ -676,96 +673,6 @@ export default function LobbyPage() {
           )}
         </Grid>
       </div>
-
-      {/* Add Team Modal */}
-      <AnimatePresence>
-        {isAddingTeam && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white rounded-lg p-6 w-full max-w-md"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-            >
-              <h2 className="text-xl font-bold mb-4">Add New Team</h2>
-              <form onSubmit={handleAddTeam}>
-                <input
-                  type="text"
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                  className="w-full p-2 border-2 rounded-lg mb-4"
-                  placeholder="Team name"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsAddingTeam(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    isLoading={isAddingTeam}
-                  >
-                    Add Team
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Add Word Modal */}
-      <AnimatePresence>
-        {isAddingWord && (
-          <motion.div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white rounded-lg p-6 w-full max-w-md"
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-            >
-              <h2 className="text-xl font-bold mb-4">Add New Word</h2>
-              <form onSubmit={handleAddWord}>
-                <input
-                  type="text"
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                  className="w-full p-2 border-2 rounded-lg mb-4"
-                  placeholder="Enter a word"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsAddingWord(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    isLoading={isAddingWord}
-                  >
-                    Add Word
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
