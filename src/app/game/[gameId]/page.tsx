@@ -480,14 +480,6 @@ export default function GamePage() {
                 <Badge variant="info" size="lg" rounded>
                   Words: {wordCounts.guessed}/{wordCounts.total}
                 </Badge>
-                
-                {/* Debug Player ID Badge - Hidden on mobile */}
-                <div className="hidden sm:block text-xs p-2 rounded-md bg-neutral-light border border-neutral">
-                  <div className="text-neutral-dark">
-                    <div><strong>Player:</strong> {getCurrentPlayer()?.name || 'Unknown'}</div>
-                    <div><strong>Team:</strong> {getPlayerTeam()?.name || 'None'}</div>
-                  </div>
-                </div>
               </div>
             </div>
           </Card>
