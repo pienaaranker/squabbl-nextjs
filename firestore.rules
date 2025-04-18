@@ -8,6 +8,12 @@ service cloud.firestore {
     //   allow read, write: if true;
     // }
 
+    // Features collection - allow read only
+    match /features/{document} {
+      allow read: if true;  // Anyone can read feature flags
+      allow write: if false; // No client-side writes allowed
+    }
+
     // Games collection rules
     match /games/{gameId} {
       // Anyone can read game state
