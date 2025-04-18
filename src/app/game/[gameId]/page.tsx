@@ -329,10 +329,15 @@ export default function GamePage() {
       // Mark word as guessed
       await markWordAsGuessed(gameId, currentWord.id, game.currentRound);
       
-      // Update team score and last guessed word
+      // Update team score in the teams subcollection
+      const teamRef = doc(db, "games", gameId, "teams", game.activeTeamId);
+      await updateDoc(teamRef, {
+        score: increment(1)
+      });
+
+      // Update last guessed word in the game document
       const gameRef = doc(db, "games", gameId);
       await updateDoc(gameRef, {
-        [`teams.${game.activeTeamId}.score`]: increment(1),
         lastGuessedWord: {
           text: currentWord.text,
           teamId: game.activeTeamId,

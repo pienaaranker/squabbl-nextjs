@@ -159,7 +159,7 @@ export default function ResultsPage() {
             <TeamCard
               key={team.id}
               team={team}
-              players={players}
+              players={players.filter(p => p.teamId === team.id)}
               isActive={index === 0}
               className={index === 0 ? 'bg-sky-100' : ''}
             />
