@@ -28,6 +28,7 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import Timer from '@/app/components/Timer';
 import TeamCard from '@/app/components/TeamCard';
 import WordCard from '@/app/components/WordCard';
+import PauseScreen from '@/app/components/PauseScreen';
 
 export default function GamePage() {
   const params = useParams<{ gameId: string }>();
@@ -280,11 +281,39 @@ export default function GamePage() {
         await advanceToNextTeam(gameId);
         setCurrentWord(null);
         setIsTimerRunning(false);
+        
+        // Update game state to paused
+        const gameRef = doc(db, "games", gameId);
+        await updateDoc(gameRef, {
+          turnState: 'paused'
+        });
+        
         toast.error("Time's up! Next team's turn.");
       } catch (error) {
         console.error("Error advancing turn:", error);
         toast.error("Failed to advance to next team");
       }
+    }
+  };
+  
+  // Handle starting a new turn from the pause screen
+  const handleStartTurn = async () => {
+    if (!isDescriber) return;
+    
+    try {
+      // Update game state to active and start the timer
+      const gameRef = doc(db, "games", gameId);
+      await updateDoc(gameRef, {
+        turnState: 'active',
+        turnStartTime: serverTimestamp()
+      });
+      
+      // Get a new word
+      const word = await getRandomUnguessedWord(gameId, game!.currentRound!);
+      setCurrentWord(word);
+    } catch (error) {
+      console.error("Error starting turn:", error);
+      toast.error("Failed to start turn");
     }
   };
   
@@ -419,6 +448,18 @@ export default function GamePage() {
       animate="enter"
       exit="exit"
     >
+      {/* Show pause screen when game is in paused state */}
+      {game?.turnState === 'paused' && (
+        <PauseScreen
+          teamName={getActiveTeamName()}
+          playerName={getActivePlayerName()}
+          isDescriber={isDescriber}
+          onStartTurn={handleStartTurn}
+          roundName={getRoundName(game.currentRound)}
+          roundInstructions={getRoundInstructions(game.currentRound)}
+        />
+      )}
+      
       <div className="w-full mx-0 sm:container sm:mx-auto p-0 sm:py-4 sm:px-2 md:py-8 md:px-4">
         <Grid columns={1} gap="xs" animate>
           {/* Game Info Section */}
