@@ -541,26 +541,42 @@ export default function LobbyPage() {
             </div>
             
             <AnimatePresence>
-              <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {teams.map((team, index) => (
-                  <motion.div
-                    key={team.id}
-                    variants={listItemVariants}
-                    custom={index}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <TeamCard
-                      team={team}
-                      players={players.filter(p => p.teamId === team.id)}
-                      onPlayerJoin={(teamId: string) => handleTeamSelect(selectedPlayerId!, teamId)}
-                      isLoading={changingTeam && selectedPlayerId === playerId}
-                      isActive={players.find(p => p.id === selectedPlayerId)?.teamId === team.id}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+              {teams.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-white/50 backdrop-blur-sm border-2 border-dashed border-neutral-300 rounded-lg p-4 text-center"
+                >
+                  <p className="text-neutral-600 mb-2">No teams have been created yet.</p>
+                  {isHost ? (
+                    <p className="text-sm text-neutral-500">Start by creating at least two teams above!</p>
+                  ) : (
+                    <p className="text-sm text-neutral-500">Wait for the host to create teams, then you can join one.</p>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {teams.map((team, index) => (
+                    <motion.div
+                      key={team.id}
+                      variants={listItemVariants}
+                      custom={index}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                    >
+                      <TeamCard
+                        team={team}
+                        players={players.filter(p => p.teamId === team.id)}
+                        onPlayerJoin={(teamId: string) => handleTeamSelect(selectedPlayerId!, teamId)}
+                        isLoading={changingTeam && selectedPlayerId === playerId}
+                        isActive={players.find(p => p.id === selectedPlayerId)?.teamId === team.id}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
             </AnimatePresence>
           </Card>
 

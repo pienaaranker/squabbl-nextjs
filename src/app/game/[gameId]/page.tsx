@@ -190,8 +190,8 @@ export default function GamePage() {
   
   // Effect to sync timer with game state
   useEffect(() => {
-    if (!game?.turnStartTime) {
-      // If no turnStartTime is available, set a default timer
+    if (!game?.turnStartTime || game?.turnState === 'paused') {
+      // If no turnStartTime is available or game is paused, set a default timer
       setTimeLeft(60);
       setIsTimerRunning(false);
       return;
