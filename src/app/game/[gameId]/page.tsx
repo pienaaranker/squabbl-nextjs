@@ -262,8 +262,11 @@ export default function GamePage() {
           const word = await getRandomUnguessedWord(gameId, game.currentRound);
           setCurrentWord(word);
           
-          // Start the timer when a new word is fetched
-          await startTimer();
+          // Only start the timer if we're not in an active turn
+          // This prevents timer reset on refresh
+          if (game.turnState !== 'active' || !game.turnStartTime) {
+            await startTimer();
+          }
         } catch (error) {
           console.error("Error getting random word:", error);
           toast.error("Failed to get a word");
