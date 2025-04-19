@@ -82,27 +82,40 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 md:p-8 bg-softwhite">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 md:p-8 bg-[#F8F8F8]">
       <div className="w-full max-w-4xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-800 mb-4 relative inline-block">
+        {/* Hero Section with enhanced styling */}
+        <div className="text-center mb-12 relative">
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-full">
+            <div className="flex justify-center space-x-4">
+              {/* Decorative elements using brand colors */}
+              <span className="text-4xl animate-bounce-slow">🎲</span>
+              <span className="text-4xl animate-bounce-slow delay-100">🎮</span>
+              <span className="text-4xl animate-bounce-slow delay-200">🎯</span>
+            </div>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 relative inline-block font-fredoka bg-gradient-to-r from-[#EF798A] to-[#A8DADC] bg-clip-text text-transparent">
             Squabbl
-            <span className="absolute -top-4 -right-4 text-xl text-coral-500">✨</span>
+            <span className="absolute -top-4 -right-4 text-2xl transform rotate-12 animate-pulse">✨</span>
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            The fun party word game where teams compete to guess words through 
-            description, charades, and one-word clues!
+          <p className="text-xl text-[#2F4F4F] max-w-2xl mx-auto font-nunito leading-relaxed">
+            The ultimate party word game where teams compete through
+            <span className="text-[#EF798A] font-semibold"> description</span>,
+            <span className="text-[#B0EACD] font-semibold"> charades</span>, and
+            <span className="text-[#FFD166] font-semibold"> one-word clues</span>!
           </p>
         </div>
 
-        {/* Main Content */}
+        {/* Main Content with enhanced card styling */}
         <div className="flex flex-col md:flex-row gap-8 w-full">
           {/* Create Game Card */}
-          <div className="flex-1 p-6 bg-white rounded-xl shadow-lg border border-sky-100">
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">Create New Game</h2>
-            <div className="mb-5">
-              <label htmlFor="hostName" className="block text-sm font-medium text-slate-600 mb-2">
+          <div className="flex-1 p-8 bg-white rounded-2xl shadow-lg border-2 border-[#A8DADC] transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+            <h2 className="text-2xl font-bold text-[#2F4F4F] mb-6 font-fredoka flex items-center">
+              <span className="text-2xl mr-3">🎲</span>
+              Create New Game
+            </h2>
+            <div className="mb-6">
+              <label htmlFor="hostName" className="block text-sm font-medium text-[#2F4F4F] mb-2 font-nunito">
                 Your Name
               </label>
               <input
@@ -111,14 +124,14 @@ export default function Home() {
                 value={hostName}
                 onChange={(e) => setHostName(e.target.value)}
                 placeholder="Enter your name"
-                className="w-full p-3 border border-sky-200 rounded-md focus:outline-none focus:ring-2 focus:ring-coral-300 bg-softwhite placeholder-slate-400"
+                className="w-full p-4 border-2 border-[#A8DADC] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#EF798A] bg-[#F8F8F8] placeholder-slate-400 font-nunito transition-all duration-200"
               />
             </div>
             
             <button
               onClick={handleCreateGame}
               disabled={isLoading || !hostName.trim()}
-              className="btn btn-primary w-full"
+              className="w-full py-4 px-6 bg-[#EF798A] text-white font-bold rounded-xl hover:bg-[#e86476] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-nunito shadow-md hover:shadow-lg flex items-center justify-center"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
@@ -128,17 +141,25 @@ export default function Home() {
                   </svg>
                   Creating Game...
                 </span>
-              ) : "Create New Game"}
+              ) : (
+                <>
+                  <span className="mr-2">🎮</span>
+                  Create New Game
+                </>
+              )}
             </button>
-            <p className="mt-2 text-sm text-slate-500 text-center">A unique game code will be generated automatically</p>
+            <p className="mt-3 text-sm text-slate-500 text-center font-nunito">A unique game code will be generated automatically</p>
           </div>
 
           {/* Join Game Card */}
-          <div className="flex-1 p-6 bg-white rounded-xl shadow-lg border border-sky-100">
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">Join Game</h2>
+          <div className="flex-1 p-8 bg-white rounded-2xl shadow-lg border-2 border-[#B0EACD] transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+            <h2 className="text-2xl font-bold text-[#2F4F4F] mb-6 font-fredoka flex items-center">
+              <span className="text-2xl mr-3">🎯</span>
+              Join Game
+            </h2>
             <form onSubmit={handleJoinGame} className="mt-5">
-              <div className="mb-5">
-                <label htmlFor="gameCode" className="block text-sm font-medium text-slate-600 mb-2">
+              <div className="mb-6">
+                <label htmlFor="gameCode" className="block text-sm font-medium text-[#2F4F4F] mb-2 font-nunito">
                   Game Code
                 </label>
                 <input
@@ -148,31 +169,36 @@ export default function Home() {
                   onChange={(e) => setJoinGameCode(e.target.value.toUpperCase())}
                   placeholder="Enter 4-character code"
                   maxLength={4}
-                  className="w-full p-3 border border-sky-200 rounded-md focus:outline-none focus:ring-2 focus:ring-sunny-300 bg-softwhite placeholder-slate-400"
+                  className="w-full p-4 border-2 border-[#B0EACD] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FFD166] bg-[#F8F8F8] placeholder-slate-400 font-nunito tracking-wider text-center text-lg transition-all duration-200"
                 />
               </div>
               
               <button
                 type="submit"
                 disabled={isJoining || !joinGameCode.trim()}
-                className="btn btn-accent w-full"
+                className="w-full py-4 px-6 bg-[#B0EACD] text-[#2F4F4F] font-bold rounded-xl hover:bg-[#9ed9bc] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-nunito shadow-md hover:shadow-lg flex items-center justify-center"
               >
                 {isJoining ? (
                   <span className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-[#2F4F4F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Joining Game...
                   </span>
-                ) : "Join Game"}
+                ) : (
+                  <>
+                    <span className="mr-2">🎲</span>
+                    Join Game
+                  </>
+                )}
               </button>
             </form>
           </div>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          <div className="mt-6 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-xl font-nunito animate-shake">
             <p className="flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -184,27 +210,56 @@ export default function Home() {
           </div>
         )}
 
-        {/* How to Play Section */}
-        <div className="mt-12 p-6 bg-white rounded-xl shadow-lg border border-sky-100">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">How to Play</h2>
-          <div className="space-y-4 text-slate-600">
-            <p>1. Create a new game or join an existing one with a 4-character code</p>
-            <p>2. Form teams of at least 2 players each</p>
-            <p>3. Each player contributes words to the game's word pool</p>
-            <p>4. Play through three exciting rounds:</p>
-            <ul className="list-disc list-inside pl-4 space-y-2">
-              <li>Round 1: Describe the word without saying it</li>
-              <li>Round 2: Act out the word (no sounds!)</li>
-              <li>Round 3: Give only one word as a clue</li>
-            </ul>
-            <p>5. The team with the most points at the end wins!</p>
+        {/* How to Play Section with enhanced styling */}
+        <div className="mt-12 p-8 bg-white rounded-2xl shadow-lg border-2 border-[#FFD166]">
+          <h2 className="text-2xl font-bold text-[#2F4F4F] mb-6 font-fredoka flex items-center">
+            <span className="text-2xl mr-3">📖</span>
+            How to Play
+          </h2>
+          <div className="space-y-5 text-[#2F4F4F] font-nunito">
+            <div className="flex items-start">
+              <span className="w-8 h-8 rounded-full bg-[#EF798A] text-white flex items-center justify-center font-bold mr-4 flex-shrink-0">1</span>
+              <p>Create a new game or join an existing one with a 4-character code</p>
+            </div>
+            <div className="flex items-start">
+              <span className="w-8 h-8 rounded-full bg-[#B0EACD] text-[#2F4F4F] flex items-center justify-center font-bold mr-4 flex-shrink-0">2</span>
+              <p>Form teams of at least 2 players each</p>
+            </div>
+            <div className="flex items-start">
+              <span className="w-8 h-8 rounded-full bg-[#FFD166] text-[#2F4F4F] flex items-center justify-center font-bold mr-4 flex-shrink-0">3</span>
+              <p>Each player contributes words to the game's word pool</p>
+            </div>
+            <div className="flex items-start">
+              <span className="w-8 h-8 rounded-full bg-[#A8DADC] text-[#2F4F4F] flex items-center justify-center font-bold mr-4 flex-shrink-0">4</span>
+              <div>
+                <p className="mb-3">Play through three exciting rounds:</p>
+                <ul className="space-y-3 pl-4">
+                  <li className="flex items-center">
+                    <span className="text-[#EF798A] mr-2">🗣️</span>
+                    Round 1: Describe the word without saying it
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-[#B0EACD] mr-2">🎭</span>
+                    Round 2: Act out the word (no sounds!)
+                  </li>
+                  <li className="flex items-center">
+                    <span className="text-[#FFD166] mr-2">💭</span>
+                    Round 3: Give only one word as a clue
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <span className="w-8 h-8 rounded-full bg-[#EF798A] text-white flex items-center justify-center font-bold mr-4 flex-shrink-0">5</span>
+              <p>The team with the most points at the end wins! 🏆</p>
+            </div>
           </div>
         </div>
 
-        {/* Buy Me a Coffee Button */}
+        {/* Buy Me a Coffee Section with enhanced styling */}
         {showDonationButton && (
           <div className="mt-12 flex flex-col items-center text-center">
-            <p className="text-slate-600 mb-4 italic">
+            <p className="text-[#2F4F4F] mb-4 font-nunito italic">
               If I had to describe this game in one word, it would be "☕"<br />
               <span className="text-sm">(That's charades for "Please fuel my coding caffeine addiction")</span>
             </p>
@@ -212,9 +267,9 @@ export default function Home() {
               href="https://buymeacoffee.com/pienaaranker"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-6 py-3 bg-[#26b0a1] text-white font-semibold rounded-lg hover:bg-[#229e91] transition-colors duration-200 shadow-md hover:shadow-lg"
+              className="inline-flex items-center px-8 py-4 bg-[#26b0a1] text-white font-semibold rounded-xl hover:bg-[#229e91] transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 font-nunito"
             >
-              <span className="mr-2">☕</span>
+              <span className="mr-2 text-xl">☕</span>
               Buy Me a Coffee
             </a>
           </div>

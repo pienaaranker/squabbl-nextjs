@@ -103,55 +103,91 @@ Squabbl is a digital adaptation of a popular party game designed for families an
 **NFR2.4: File Structure**
 
 ```
-squabbl/
-├── app/                        # Next.js app directory
-│   ├── layout.tsx             # Root layout component with providers
-│   ├── page.tsx               # Landing page with game creation
-│   ├── game/                  # Game-related routes
-│   │   ├── [id]/             # Dynamic game session route
-│   │   │   ├── page.tsx      # Main game interface
-│   │   │   └── layout.tsx    # Game session layout
-│   │   └── new/              # New game creation route
-│   │       └── page.tsx      # Game creation form
-│   └── join/                  # Join game route
-│       └── [code]/           # Dynamic join code route
-│           └── page.tsx      # Join game interface
-├── components/                # Reusable React components
-│   ├── ui/                   # Basic UI components
-│   │   ├── Button.tsx       # Custom button component
-│   │   ├── Input.tsx        # Custom input component
-│   │   └── Modal.tsx        # Modal dialog component
-│   ├── game/                 # Game-specific components
-│   │   ├── Lobby.tsx        # Game lobby interface
-│   │   ├── GameBoard.tsx    # Main game board
-│   │   ├── Timer.tsx        # Game timer component
-│   │   ├── TeamList.tsx     # Team management component
-│   │   └── WordPot.tsx      # Word pot visualization
-│   └── forms/                # Form-related components
-│       ├── CreateGame.tsx    # Game creation form
-│       └── JoinGame.tsx      # Game joining form
-├── lib/                      # Utility functions and hooks
-│   ├── firebase/            # Firebase configuration
-│   │   ├── config.ts        # Firebase app config
-│   │   ├── auth.ts          # Authentication utilities
-│   │   └── db.ts            # Database utilities
-│   ├── hooks/               # Custom React hooks
-│   │   ├── useGame.ts       # Game state management
-│   │   ├── useTeams.ts      # Team management
-│   │   └── useWords.ts      # Word pot management
-│   └── utils/               # Helper functions
-│       ├── gameLogic.ts     # Game rules and logic
-│       └── wordGen.ts       # AI word generation
-├── types/                    # TypeScript type definitions
-│   ├── game.ts              # Game-related types
-│   ├── team.ts              # Team-related types
-│   └── user.ts              # User-related types
-├── styles/                   # Global styles
-│   └── globals.css          # Global CSS
-├── public/                   # Static assets
-├── firebase.json            # Firebase configuration
-├── firestore.rules          # Firestore security rules
-└── package.json             # Project dependencies
+squabbl-nextjs/
+├── src/                        # Source directory
+│   ├── app/                    # Next.js app directory
+│   │   ├── components/        # App-specific components
+│   │   │   ├── ui/           # Basic UI components
+│   │   │   │   ├── AnimatedIcon.tsx
+│   │   │   │   ├── Button.tsx
+│   │   │   │   ├── Card.tsx
+│   │   │   │   ├── Heading.tsx
+│   │   │   │   ├── Input.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── layouts/      # Layout components
+│   │   │   │   ├── Flex.tsx
+│   │   │   │   ├── Grid.tsx
+│   │   │   │   └── constants.ts
+│   │   │   ├── Badge.tsx
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Checkbox.tsx
+│   │   │   ├── CurrentTurnInfo.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── LoadingSpinner.tsx
+│   │   │   ├── PauseScreen.tsx
+│   │   │   ├── Radio.tsx
+│   │   │   ├── TeamCard.tsx
+│   │   │   ├── Timer.tsx
+│   │   │   ├── WordCard.tsx
+│   │   │   └── WordInput.tsx
+│   │   ├── game/             # Game-related routes
+│   │   │   └── [gameId]/     # Dynamic game route
+│   │   │       └── page.tsx
+│   │   ├── join/             # Join game routes
+│   │   │   └── [gameId]/     # Dynamic join route
+│   │   │       └── page.tsx
+│   │   ├── lobby/            # Lobby routes
+│   │   │   └── [gameId]/     # Dynamic lobby route
+│   │   │       └── page.tsx
+│   │   ├── results/          # Results routes
+│   │   │   └── [gameId]/     # Dynamic results route
+│   │   │       └── page.tsx
+│   │   ├── page.tsx          # Landing page
+│   │   ├── layout.tsx        # Root layout
+│   │   ├── error.tsx         # Error handling
+│   │   ├── not-found.tsx     # 404 page
+│   │   └── globals.css       # Global styles
+│   ├── lib/                   # Utility functions and hooks
+│   │   ├── firebase/         # Firebase services
+│   │   │   ├── config.ts
+│   │   │   ├── featureService.ts
+│   │   │   ├── gameService.ts
+│   │   │   └── gameVerificationService.ts
+│   │   ├── services/         # Application services
+│   │   │   ├── gameService.ts
+│   │   │   └── geminiService.ts
+│   │   ├── utils/            # Helper functions
+│   │   │   ├── gameCode.ts
+│   │   │   └── wordCategories.ts
+│   │   ├── hooks/            # Custom React hooks
+│   │   │   └── useWindowSize.ts
+│   │   └── animations.ts     # Animation utilities
+│   └── types/                 # TypeScript type definitions
+│       └── firestore.ts      # Firestore types
+├── public/                    # Static assets
+│   ├── images/
+│   │   └── confetti-pattern.svg
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── .gitignore                # Git ignore rules
+├── deploy.sh                 # Deployment script
+├── eslint.config.mjs         # ESLint configuration
+├── firebase.json             # Firebase configuration
+├── firestore.indexes.json    # Firestore indexes
+├── firestore.rules           # Firestore security rules
+├── next.config.ts            # Next.js configuration
+├── package.json              # Project dependencies
+├── postcss.config.mjs        # PostCSS configuration
+├── style-guide.md           # Style guidelines
+├── tailwind.config.js        # Tailwind CSS configuration
+├── testing-plan.md          # Testing documentation
+├── tsconfig.json            # TypeScript configuration
+└── ui-overhaul.md          # UI/UX documentation
 ```
 
 **NFR3: Performance**
