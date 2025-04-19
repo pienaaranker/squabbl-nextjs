@@ -1,8 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WORD_CATEGORIES, type GenerationContext } from '../utils/wordCategories';
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 /**
  * Generates words based on a description using Gemini
@@ -17,8 +13,6 @@ export async function generateWords(
   context?: GenerationContext
 ): Promise<string[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
-    
     // If no description and we have a category, use it
     if (!description && context?.playerCategory) {
       const category = WORD_CATEGORIES.find(c => c.name === context.playerCategory);
@@ -102,7 +96,7 @@ Disney (proper noun)
 
 YOUR RESPONSE (ONLY WORDS):`;
 
-    console.log('🤖 Sending prompt to Gemini:', {
+    console.log('🤖 Sending prompt to proxy:', {
       promptLength: prompt.length,
       wordTypeCounts: {
         nouns: Math.ceil(count/2),
@@ -114,16 +108,28 @@ YOUR RESPONSE (ONLY WORDS):`;
     // Log the full prompt
     console.log('📝 Full prompt:', '\n' + prompt);
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Call the proxy endpoint instead of Gemini directly
+    const response = await fetch('https://proxy-chi-plum.vercel.app/api/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Proxy request failed with status ${response.status}`);
+    }
+
+    const result = await response.json();
+    const text = result.text || '';
     
     // Split the response into lines and clean up
     const words = text
       .split('\n')
-      .map(word => word.trim())
-      .filter(word => word.length > 0)
-      .map(word => word.replace(/\s*\([^)]*\)/, '')) // Remove the (type) annotations
+      .map((word: string) => word.trim())
+      .filter((word: string) => word.length > 0)
+      .map((word: string) => word.replace(/\s*\([^)]*\)/, '')) // Remove the (type) annotations
       .slice(0, count); // Ensure we only get the requested number of words
     
     // If we didn't get enough words, pad with some defaults
@@ -141,7 +147,7 @@ YOUR RESPONSE (ONLY WORDS):`;
     
     return words;
   } catch (error) {
-    console.error('Error generating words with Gemini:', error);
+    console.error('Error generating words with proxy:', error);
     throw new Error('Failed to generate words. Please try again.');
   }
 } 
