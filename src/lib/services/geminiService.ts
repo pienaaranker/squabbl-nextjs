@@ -122,7 +122,13 @@ YOUR RESPONSE (ONLY WORDS):`;
     }
 
     const result = await response.json();
-    const text = result.text || '';
+    
+    // Extract text from the new response format
+    if (!result.response || result.status !== 'success') {
+      throw new Error('Invalid response from proxy');
+    }
+    
+    const text = result.response;
     
     // Split the response into lines and clean up
     const words = text
@@ -131,6 +137,9 @@ YOUR RESPONSE (ONLY WORDS):`;
       .filter((word: string) => word.length > 0)
       .map((word: string) => word.replace(/\s*\([^)]*\)/, '')) // Remove the (type) annotations
       .slice(0, count); // Ensure we only get the requested number of words
+
+    // Log the full prompt
+    console.log('📝 Full words:', '\n' + words);
     
     // If we didn't get enough words, pad with some defaults
     const defaultWords = [
