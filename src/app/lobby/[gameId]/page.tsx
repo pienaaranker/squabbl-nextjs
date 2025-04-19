@@ -436,7 +436,7 @@ export default function LobbyPage() {
         <div className="container mx-auto py-8 px-4">
           <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <AnimatedIcon
-              icon="⚠️"
+              icon={<span>⚠️</span>}
               color="coral"
               size="xl"
               animation="wiggle"
@@ -472,222 +472,341 @@ export default function LobbyPage() {
 
   return (
     <motion.div
-      className="min-h-screen bg-background"
       variants={pageVariants}
-      initial="initial"
-      animate="enter"
+      initial="hidden"
+      animate="visible"
       exit="exit"
+      className="min-h-screen bg-[#F8F8F8] p-4 md:p-8"
     >
-      <div className="w-full mx-0 sm:container sm:mx-auto p-0 sm:py-4 sm:px-2 md:py-8 md:px-4">
-        <Grid columns={1} gap="xs" animate>
-          {/* Game Info Section */}
-          <Card className="w-full p-1 sm:p-2 md:p-4">
-            <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
-              <div className="flex flex-col gap-1 sm:gap-2">
-                <h3 className="text-xs sm:text-sm font-bold font-poppins">Game Lobby</h3>
-                <p className="text-sm sm:text-base font-medium text-primary">Share code: <span className="font-bold">{game?.code}</span></p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    navigator.clipboard.writeText(shareableLink);
-                    toast.success('Link copied to clipboard!');
-                  }}
-                  leftIcon={<span>📋</span>}
-                  className="flex-grow sm:flex-grow-0"
-                >
-                  Copy Invite Link
-                </Button>
-                {isHost && (
-                  <Button
-                    variant="primary"
-                    onClick={handleStartGame}
-                    isLoading={isStartingGame}
-                    disabled={!canStart || isStartingGame}
-                    leftIcon={<span>🎲</span>}
-                    className="flex-grow sm:flex-grow-0"
-                  >
-                    Start Game
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Card>
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 font-fredoka text-[#2F4F4F] flex items-center justify-center">
+            <motion.span 
+              className="mr-3"
+              animate={{ rotate: [0, -10, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            >
+              🎲
+            </motion.span>
+            Game Lobby
+            <motion.span 
+              className="ml-3"
+              animate={{ rotate: [0, 10, -10, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            >
+              🎮
+            </motion.span>
+          </h1>
+          {game && (
+            <motion.p 
+              className="text-xl text-[#2F4F4F] font-nunito"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Game Code: <span className="font-bold bg-[#FFD166] px-3 py-1 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">{game.code}</span>
+            </motion.p>
+          )}
+        </motion.div>
 
-          {/* Teams Management Card */}
-          <Card className="w-full p-1 sm:p-2 md:p-4 bg-red-200">
-            <div className="flex flex-col sm:flex-row sm:space-y-0 sm:space-x-4 sm:items-center sm:justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-bold font-poppins">Teams</h3>
-              {isHost && (
-                <form onSubmit={handleAddTeam} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+        <div className="space-y-8">
+          {/* Share Link Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-white p-6 rounded-2xl shadow-lg border-2 border-[#A8DADC] hover:border-[#B0EACD] transition-all duration-200"
+          >
+            <h2 className="text-2xl font-bold mb-4 font-fredoka text-[#2F4F4F] flex items-center">
+              <motion.span 
+                className="mr-2"
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+              >
+                🔗
+              </motion.span>
+              Share Game
+            </h2>
+            <div className="flex flex-wrap gap-4">
+              <input
+                type="text"
+                readOnly
+                value={shareableLink}
+                className="flex-1 p-3 bg-[#F8F8F8] border-2 border-[#A8DADC] rounded-xl font-nunito text-[#2F4F4F] focus:border-[#EF798A] focus:ring-2 focus:ring-[#EF798A] transition-all duration-200"
+              />
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareableLink);
+                  toast.success('Link copied to clipboard!');
+                }}
+                className="bg-[#EF798A] text-white px-6 py-3 rounded-xl font-nunito hover:bg-[#e86476] transform hover:-translate-y-1 active:translate-y-0 transition-all duration-200"
+              >
+                Copy Link
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Teams Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-white p-6 rounded-2xl shadow-lg border-2 border-[#B0EACD] hover:shadow-xl transition-all duration-200"
+          >
+            <h2 className="text-2xl font-bold mb-6 font-fredoka text-[#2F4F4F] flex items-center">
+              <motion.span 
+                className="mr-2"
+                animate={{ rotate: [0, 10, -10, 10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                👥
+              </motion.span>
+              Teams
+            </h2>
+            
+            {/* Add Team Form */}
+            {isHost && (
+              <form onSubmit={handleAddTeam} className="mb-6">
+                <div className="flex flex-wrap gap-4">
                   <input
                     type="text"
                     value={newTeamName}
                     onChange={(e) => setNewTeamName(e.target.value)}
-                    className="p-2 border-2 rounded-lg grow sm:grow-0 sm:w-auto text-sm"
-                    placeholder="Team name"
+                    placeholder="Enter team name"
+                    className="flex-1 p-3 border-2 border-[#B0EACD] rounded-xl font-nunito focus:outline-none focus:ring-2 focus:ring-[#FFD166] focus:border-[#FFD166] bg-[#F8F8F8] transition-all duration-200"
                   />
                   <Button
-                    variant="primary"
                     type="submit"
-                    isLoading={isAddingAIWords}
-                    className="flex-shrink-0"
+                    disabled={!newTeamName.trim()}
+                    className="bg-[#B0EACD] text-[#2F4F4F] px-6 py-3 rounded-xl font-nunito hover:bg-[#9ed9bc] transform hover:-translate-y-1 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
                   >
                     Add Team
                   </Button>
-                </form>
-              )}
-            </div>
-            
-            <AnimatePresence>
-              {teams.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="bg-white/50 backdrop-blur-sm border-2 border-dashed border-neutral-300 rounded-lg p-4 text-center"
-                >
-                  <p className="text-neutral-600 mb-2">No teams have been created yet.</p>
-                  {isHost ? (
-                    <p className="text-sm text-neutral-500">Start by creating at least two teams above!</p>
-                  ) : (
-                    <p className="text-sm text-neutral-500">Wait for the host to create teams, then you can join one.</p>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {teams.map((team, index) => (
-                    <motion.div
+                </div>
+                {addTeamError && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 text-red-600 font-nunito"
+                  >
+                    {addTeamError}
+                  </motion.p>
+                )}
+              </form>
+            )}
+
+            {/* Teams Grid */}
+            <Grid columns={2} className="gap-4">
+              <AnimatePresence>
+                {teams.map((team) => (
+                  <motion.div
+                    key={team.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <TeamCard
                       key={team.id}
-                      variants={listItemVariants}
-                      custom={index}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                    >
-                      <TeamCard
-                        team={team}
-                        players={players.filter(p => p.teamId === team.id)}
-                        onPlayerJoin={(teamId: string) => handleTeamSelect(selectedPlayerId!, teamId)}
-                        isLoading={changingTeam && selectedPlayerId === playerId}
-                        isActive={players.find(p => p.id === selectedPlayerId)?.teamId === team.id}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
+                      team={team}
+                      players={players.filter(p => p.teamId === team.id)}
+                      onPlayerJoin={(teamId) => handleTeamSelect(selectedPlayerId!, teamId)}
+                      className="border-2 border-[#A8DADC] hover:border-[#B0EACD] transform hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </Grid>
+          </motion.div>
 
-          {/* Consolidated Player Word Management Card */}
-          <Card className="w-full p-1 sm:p-2 md:p-4 bg-red-200">
-            {/* Header with Title */}
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs sm:text-sm font-bold font-poppins">Add Words</h3>
-              <h3 className="text-xs sm:text-sm font-bold text-neutral-dark">({words.length}/5)</h3>
+          {/* Words Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-white p-6 rounded-2xl shadow-lg border-2 border-[#FFD166] hover:shadow-xl transition-all duration-200"
+          >
+            <h2 className="text-2xl font-bold mb-6 font-fredoka text-[#2F4F4F] flex items-center">
+              <motion.span 
+                className="mr-2"
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+              >
+                📝
+              </motion.span>
+              Words
+              <Badge className="ml-3 bg-[#FFD166] text-[#2F4F4F] transform hover:scale-105 transition-transform duration-200">
+                {allWordsCount} total
+              </Badge>
+            </h2>
+
+            {/* Word Input Instructions */}
+            <div className="mb-6 p-4 bg-[#F8F8F8] rounded-xl border-2 border-[#A8DADC]">
+              <p className="text-[#2F4F4F] font-nunito">
+                <span className="font-semibold">Add words in two ways:</span>
+              </p>
+              <ul className="mt-2 space-y-1 text-[#2F4F4F] font-nunito">
+                <li className="flex items-center">
+                  <span className="mr-2">✏️</span>
+                   Individually add words or
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">🤖</span>
+                  Enter a description and let AI generate words for you
+                </li>
+              </ul>
             </div>
 
-            {/* Single Input Form with Two Actions */}
-            <form onSubmit={handleAddWord} className="mb-2">
-              <p className="text-xs text-neutral-dark mb-1">
-                Enter a word to add manually, or describe words you'd like AI to generate (max 5 words per player)
-              </p>
-              <div className="flex flex-col sm:flex-row items-stretch gap-2">
+            {/* Word Input Form */}
+            <form onSubmit={handleAddWord} className="mb-6">
+              <div className="flex flex-wrap gap-4">
                 <input
                   type="text"
                   value={newWord}
                   onChange={(e) => setNewWord(e.target.value)}
-                  className="p-2 border-2 rounded-lg grow text-sm"
-                  placeholder="e.g., 'beach' or 'summer vacation words'"
-                  disabled={words.length >= 5}
+                  placeholder="Add a word or description"
+                  className="flex-1 p-3 border-2 border-[#FFD166] rounded-xl font-nunito focus:outline-none focus:ring-2 focus:ring-[#EF798A] focus:border-[#EF798A] bg-[#F8F8F8] transition-all duration-200"
                 />
-                <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    isLoading={isAddingAIWords}
-                    className="grow sm:grow-0 h-10"
-                    rightIcon={<span>✏️</span>}
-                    disabled={!newWord.trim() || words.length >= 5 || isAddingAIWords}
-                  >
-                    Add Word
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={handleAddAIWords}
-                    disabled={isAddingAIWords || !playerId || game?.state !== 'lobby' || words.length >= 5}
-                    className="grow sm:grow-0 h-10"
-                    rightIcon={<AnimatedIcon icon="🤖" />}
-                  >
-                    Generate
-                  </Button>
-                </div>
+                <Button
+                  type="submit"
+                  disabled={!newWord.trim()}
+                  className="bg-[#FFD166] text-[#2F4F4F] px-6 py-3 rounded-xl font-nunito hover:bg-[#e5bc5c] transform hover:-translate-y-1 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+                >
+                  Add Word ✏️
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAddAIWords}
+                  disabled={isAddingAIWords}
+                  className="bg-[#A8DADC] text-[#2F4F4F] px-6 py-3 rounded-xl font-nunito hover:bg-[#97c3c5] transform hover:-translate-y-1 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+                >
+                  {isAddingAIWords ? (
+                    <span className="flex items-center">
+                      <LoadingSpinner 
+                        size="sm" 
+                        color="coral"
+                      />
+                      <span className="ml-2">Generating Words...</span>
+                    </span>
+                  ) : (
+                    <>
+                      Generate Words 🤖
+                    </>
+                  )}
+                </Button>
               </div>
             </form>
-            
-            {/* Display Existing Player Words */}
+
+            {/* Words List */}
             <AnimatePresence>
-              <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-2 mt-2">
-                {words.map((word, index) => (
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1
+                    }
+                  }
+                }}
+              >
+                {words.map((word) => (
                   <motion.div
                     key={word.id}
-                    variants={listItemVariants}
-                    custom={index}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    className="relative group bg-white rounded-lg border-2 border-neutral-light hover:border-primary transition-colors p-2 flex justify-between items-center"
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="bg-[#F8F8F8] p-3 rounded-xl border-2 border-[#A8DADC] hover:border-[#EF798A] group transition-all duration-200"
                   >
-                    <p className="font-medium text-sm break-all pr-2">{word.text}</p>
-                    <motion.button
-                      className="p-1.5 rounded-full text-neutral hover:text-red-500 hover:bg-red-50 transition-colors"
-                      onClick={() => handleRemoveWord(word.id)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label={`Remove word ${word.text}`}
-                      disabled={isRemovingWord === word.id}
-                    >
-                      { isRemovingWord === word.id ? <LoadingSpinner size="sm" /> : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      )}
-                    </motion.button>
+                    <div className="flex items-center justify-between">
+                      <span className="font-nunito text-[#2F4F4F] group-hover:text-[#EF798A] transition-colors duration-200">{word.text}</span>
+                      <Button
+                        onClick={() => handleRemoveWord(word.id)}
+                        disabled={isRemovingWord === word.id}
+                        className="p-2 rounded-full text-[#A8DADC] hover:text-[#2F4F4F] hover:bg-[#A8DADC] transition-all duration-200"
+                      >
+                        {isRemovingWord === word.id ? (
+                          <LoadingSpinner 
+                            size="sm" 
+                            color="coral"
+                          />
+                        ) : (
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className="h-4 w-4" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            strokeWidth={2}
+                          >
+                            <path 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              d="M6 18L18 6M6 6l12 12" 
+                            />
+                          </svg>
+                        )}
+                      </Button>
+                    </div>
                   </motion.div>
                 ))}
               </motion.div>
             </AnimatePresence>
-            {wordError && <p className="text-red-500 text-sm mt-2">{wordError}</p>}
+          </motion.div>
 
-          </Card>
-
-          {/* Game Start Requirements */}
-          {startGameErrors.length > 0 && (
+          {/* Start Game Section */}
+          {isHost && (
             <motion.div
-              className="bg-red-50 border-2 border-red-200 rounded-lg p-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={springs.bouncy}
+              variants={cardVariants}
+              className="bg-white p-6 rounded-2xl shadow-lg border-2 border-[#EF798A] text-center hover:shadow-xl transition-all duration-200"
             >
-              <h3 className="text-sm font-semibold text-red-700 mb-2">
-                Before starting the game:
-              </h3>
-              <ul className="list-disc list-inside text-red-600 space-y-1">
-                {startGameErrors.map((error, index) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    {error}
-                  </motion.li>
-                ))}
-              </ul>
+              <Button
+                onClick={handleStartGame}
+                disabled={!canStart || isStartingGame}
+                className="w-full max-w-md bg-[#EF798A] text-white px-8 py-4 rounded-xl font-nunito text-xl hover:bg-[#e86476] transform hover:-translate-y-1 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed"
+              >
+                {isStartingGame ? (
+                  <span className="flex items-center justify-center">
+                    <LoadingSpinner 
+                      size="sm" 
+                      color="coral"
+                    />
+                    <span className="ml-2">Starting Game...</span>
+                  </span>
+                ) : (
+                  <>
+                    <span className="mr-2">🎮</span>
+                    Start Game
+                  </>
+                )}
+              </Button>
+              {startGameErrors.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-4 bg-red-50 border-2 border-red-200 rounded-xl"
+                >
+                  <ul className="text-red-700 font-nunito space-y-2">
+                    {startGameErrors.map((error, index) => (
+                      <motion.li 
+                        key={index} 
+                        className="flex items-center"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <span className="mr-2">⚠️</span>
+                        {error}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
             </motion.div>
           )}
-        </Grid>
+        </div>
       </div>
     </motion.div>
   );
