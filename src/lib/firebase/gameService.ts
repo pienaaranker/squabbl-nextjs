@@ -359,14 +359,42 @@ export async function startGame(gameId: string): Promise<void> {
     
     // Create a sequence that covers all teams multiple times to ensure we have enough turns
     for (let round = 0; round < 3; round++) {
-      for (const teamId of shuffledTeamIds) {
-        const teamPlayers = players.filter(p => p.teamId === teamId);
-        // Add each player in the team to the sequence
-        for (const player of teamPlayers) {
-          turnSequence.push({ teamId, playerId: player.id });
+      // Get players for each team and track current player index
+      const teamPlayerIndices = new Map<string, number>();
+      const teamPlayers = new Map<string, Player[]>();
+      
+      // Initialize player arrays and indices for each team
+      shuffledTeamIds.forEach(teamId => {
+        const playersInTeam = players.filter(p => p.teamId === teamId);
+        teamPlayers.set(teamId, playersInTeam);
+        teamPlayerIndices.set(teamId, 0);
+      });
+      
+      // Calculate how many turns we need to ensure everyone gets equal turns
+      const maxPlayersInAnyTeam = Math.max(...Array.from(teamPlayers.values()).map(p => p.length));
+      const totalTurnsNeeded = maxPlayersInAnyTeam * teams.length;
+      
+      // Generate turns for this round
+      for (let turn = 0; turn < totalTurnsNeeded; turn++) {
+        const teamId = shuffledTeamIds[turn % teams.length];
+        const teamPlayerList = teamPlayers.get(teamId)!;
+        let playerIndex = teamPlayerIndices.get(teamId)!;
+        
+        // If we've used all players in this team, start over
+        if (playerIndex >= teamPlayerList.length) {
+          playerIndex = 0;
+          teamPlayerIndices.set(teamId, 0);
         }
+        
+        const player = teamPlayerList[playerIndex];
+        turnSequence.push({ teamId, playerId: player.id });
+        
+        // Increment the player index for this team
+        teamPlayerIndices.set(teamId, playerIndex + 1);
       }
     }
+    
+    console.log("Generated turn sequence:", turnSequence);
     
     // 5. Set initial turn from the sequence
     const firstTurn = turnSequence[0];
