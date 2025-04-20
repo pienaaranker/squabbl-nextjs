@@ -11,9 +11,12 @@ interface TeamCardProps {
   isActive?: boolean;
   className?: string;
   onPlayerJoin?: (playerId: string) => void;
+  onPlayerRemove?: (playerId: string) => void;
   isLoading?: boolean;
   activeSpeaker?: Player | null;
   showScore?: boolean;
+  isHost?: boolean;
+  gameState?: string;
 }
 
 export default function TeamCard({
@@ -22,10 +25,15 @@ export default function TeamCard({
   isActive = false,
   className = '',
   onPlayerJoin,
+  onPlayerRemove,
   isLoading = false,
   activeSpeaker = null,
-  showScore = false
+  showScore = false,
+  isHost = false,
+  gameState = 'lobby'
 }: TeamCardProps) {
+  const showRemoveButton = isHost && gameState === 'lobby';
+
   return (
     <div 
       className={`
@@ -54,18 +62,36 @@ export default function TeamCard({
           ) : (
             <div className="flex flex-wrap gap-1">
               {players.map(player => (
-                <span 
+                <div 
                   key={player.id}
-                  className={`
-                    inline-block px-2 py-1 rounded-full text-xs
-                    ${activeSpeaker?.id === player.id 
-                      ? 'bg-sky-200 text-sky-800' 
-                      : 'bg-neutral-light text-neutral-dark'
-                    }
-                  `}
+                  className="flex items-center gap-1"
                 >
-                  {player.name}
-                </span>
+                  <span 
+                    className={`
+                      inline-block px-2 py-1 rounded-full text-xs
+                      ${activeSpeaker?.id === player.id 
+                        ? 'bg-sky-200 text-sky-800' 
+                        : 'bg-neutral-light text-neutral-dark'
+                      }
+                    `}
+                  >
+                    {player.name}
+                    {player.isHost && (
+                      <span className="ml-1" title="Host">👑</span>
+                    )}
+                  </span>
+                  {showRemoveButton && !player.isHost && onPlayerRemove && (
+                    <button
+                      onClick={() => onPlayerRemove(player.id)}
+                      className="p-1 rounded-full text-neutral-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      title="Remove player"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}

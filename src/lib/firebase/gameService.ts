@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDocs, query, where, getDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDocs, query, where, getDoc, writeBatch } from "firebase/firestore";
 import { db } from "./config"; // Import the initialized db instance
 import type { Game, Player, Team, Word } from "@/types/firestore"; // Import all types
 import { GameVerificationService } from "./gameVerificationService"; // Import verification service
@@ -776,5 +776,73 @@ export async function createGame(code: string): Promise<string> {
   } catch (error) {
     console.error("Error creating game:", error);
     throw new Error("Failed to create game");
+  }
+}
+
+/**
+ * Removes a player from the game. Only the host can remove players, and only during the lobby state.
+ * 
+ * @param {string} gameId - The ID of the game.
+ * @param {string} playerToRemoveId - The ID of the player to remove.
+ * @param {string} requestingPlayerId - The ID of the player requesting the removal (must be host).
+ * @returns {Promise<void>}
+ * @throws {Error} If there's an issue removing the player or if the requesting player is not the host.
+ */
+export async function removePlayerFromGame(gameId: string, playerToRemoveId: string, requestingPlayerId: string): Promise<void> {
+  try {
+    // 1. Get game state first
+    const gameRef = doc(db, "games", gameId);
+    const gameSnap = await getDoc(gameRef);
+    
+    if (!gameSnap.exists()) {
+      throw new Error("Game not found.");
+    }
+    
+    const gameData = gameSnap.data();
+    if (gameData?.state !== 'lobby') {
+      throw new Error("Players can only be removed during the lobby phase.");
+    }
+
+    // 2. Verify the requesting player is the host
+    const requestingPlayerRef = doc(db, "games", gameId, "players", requestingPlayerId);
+    const requestingPlayerSnap = await getDoc(requestingPlayerRef);
+    
+    if (!requestingPlayerSnap.exists() || !requestingPlayerSnap.data()?.isHost) {
+      throw new Error("Only the host can remove players from the game.");
+    }
+
+    // 3. Verify the player to remove exists and is not the host
+    const playerToRemoveRef = doc(db, "games", gameId, "players", playerToRemoveId);
+    const playerToRemoveSnap = await getDoc(playerToRemoveRef);
+    
+    if (!playerToRemoveSnap.exists()) {
+      throw new Error("Player not found.");
+    }
+    
+    if (playerToRemoveSnap.data()?.isHost) {
+      throw new Error("Cannot remove the host from the game.");
+    }
+
+    // 4. Remove player's words and the player document
+    const wordsQuery = query(
+      collection(db, "games", gameId, "words"),
+      where("submittedByPlayerId", "==", playerToRemoveId)
+    );
+    const wordsSnapshot = await getDocs(wordsQuery);
+    const batch = writeBatch(db);
+    
+    wordsSnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    
+    // Remove the player document
+    batch.delete(playerToRemoveRef);
+    
+    await batch.commit();
+
+    console.log(`Player ${playerToRemoveId} removed from game ${gameId}`);
+  } catch (error) {
+    console.error(`Error removing player from game ${gameId}:`, error);
+    throw error;
   }
 }

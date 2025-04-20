@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react'; // Import React, useState, u
 import { doc, onSnapshot, collection, query, orderBy, getDocs, where, getDoc } from "firebase/firestore"; // Updated Firestore functions
 import { db } from '@/lib/firebase/config'; // Import db instance
 import type { Game, Team, Player, Word } from '@/types/firestore'; // Import Game, Team, and Player types
-import { addTeamToGame, updatePlayerTeam, addWord, removeWord, addAIWords, getPlayerWords, startGame, addPlayerToGame } from '@/lib/firebase/gameService'; // Import functions
+import { addTeamToGame, updatePlayerTeam, addWord, removeWord, addAIWords, getPlayerWords, startGame, addPlayerToGame, removePlayerFromGame } from '@/lib/firebase/gameService'; // Import functions
 import { GameVerificationService } from '@/lib/firebase/gameVerificationService'; // Import verification service
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,6 +49,7 @@ export default function LobbyPage() {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [startGameErrors, setStartGameErrors] = useState<string[]>([]);
   const [canStart, setCanStart] = useState<boolean>(false);
+  const [removingPlayerId, setRemovingPlayerId] = useState<string | null>(null);
 
   // Effect for setting shareable link
   useEffect(() => {
@@ -399,6 +400,22 @@ export default function LobbyPage() {
     }
   };
 
+  // Handle player removal
+  const handleRemovePlayer = async (playerIdToRemove: string) => {
+    if (!gameId || !playerId) return;
+
+    try {
+      setRemovingPlayerId(playerIdToRemove);
+      await removePlayerFromGame(gameId, playerIdToRemove, playerId);
+      toast.success("Player removed successfully");
+    } catch (error) {
+      console.error("Failed to remove player:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to remove player");
+    } finally {
+      setRemovingPlayerId(null);
+    }
+  };
+
   if (loading) {
     return (
       <motion.div
@@ -557,24 +574,30 @@ export default function LobbyPage() {
                 </motion.div>
               ) : (
                 <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {teams.map((team, index) => (
-                    <motion.div
-                      key={team.id}
-                      variants={listItemVariants}
-                      custom={index}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                    >
-                      <TeamCard
-                        team={team}
-                        players={players.filter(p => p.teamId === team.id)}
-                        onPlayerJoin={(teamId: string) => handleTeamSelect(selectedPlayerId!, teamId)}
-                        isLoading={changingTeam && selectedPlayerId === playerId}
-                        isActive={players.find(p => p.id === selectedPlayerId)?.teamId === team.id}
-                      />
-                    </motion.div>
-                  ))}
+                  {teams.map((team, index) => {
+                    const teamPlayers = players.filter(p => p.teamId === team.id);
+                    return (
+                      <motion.div
+                        key={team.id}
+                        variants={listItemVariants}
+                        custom={index}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                      >
+                        <TeamCard
+                          team={team}
+                          players={teamPlayers}
+                          onPlayerJoin={(teamId) => handleTeamSelect(selectedPlayerId!, teamId)}
+                          isLoading={changingTeam && selectedPlayerId === playerId}
+                          isActive={players.find(p => p.id === selectedPlayerId)?.teamId === team.id}
+                          isHost={isHost}
+                          onPlayerRemove={handleRemovePlayer}
+                          gameState={game?.state}
+                        />
+                      </motion.div>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
