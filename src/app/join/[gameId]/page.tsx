@@ -126,16 +126,17 @@ export default function JoinGamePage() {
 
   return (
     <motion.div
-      className="min-h-screen bg-background flex items-center justify-center p-4"
+      className="min-h-screen bg-[#F8F8F8] flex items-center justify-center p-4"
       variants={pageVariants}
       initial="initial"
       animate="enter"
       exit="exit"
     >
-      <Card className="max-w-md w-full">
-        <div className="p-6">
+      <div className="w-full max-w-md">
+        <div className="p-8 bg-white rounded-2xl shadow-lg border-2 border-[#B0EACD]">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold font-poppins text-foreground mb-4">
+            <h1 className="text-2xl font-bold text-[#2F4F4F] mb-6 font-fredoka flex items-center justify-center">
+              <span className="text-2xl mr-3">🎯</span>
               Join Game
             </h1>
             {game && (
@@ -145,9 +146,9 @@ export default function JoinGamePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={springs.bouncy}
               >
-                <p className="text-neutral-dark mb-2">Game Code:</p>
-                <div className="bg-sky-100 px-4 py-2 rounded-lg inline-block border-2 border-sky-200">
-                  <span className="font-mono font-bold text-xl text-sky-800">
+                <p className="text-neutral-dark mb-2 font-nunito">Game Code:</p>
+                <div className="bg-[#B0EACD] px-4 py-2 rounded-lg inline-block border-2 border-[#B0EACD]">
+                  <span className="font-mono font-bold text-xl text-[#2F4F4F] tracking-wider">
                     {game.code}
                   </span>
                 </div>
@@ -155,9 +156,9 @@ export default function JoinGamePage() {
             )}
           </div>
 
-          <form onSubmit={handleJoin} className="space-y-4">
+          <form onSubmit={handleJoin} className="space-y-6">
             <div>
-              <label htmlFor="playerName" className="block text-sm font-medium text-neutral-dark mb-2">
+              <label htmlFor="playerName" className="block text-sm font-medium text-[#2F4F4F] mb-2 font-nunito">
                 Your Name
               </label>
               <input
@@ -166,7 +167,7 @@ export default function JoinGamePage() {
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
                 placeholder="Enter your name"
-                className="w-full p-3 border-2 border-neutral-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder-neutral-dark"
+                className="w-full p-4 border-2 border-[#B0EACD] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FFD166] bg-[#F8F8F8] placeholder-slate-400 font-nunito transition-all duration-200"
                 disabled={joining}
                 required
               />
@@ -178,14 +179,14 @@ export default function JoinGamePage() {
               disabled={joining || !playerName.trim()}
               isLoading={joining}
               loadingText="Joining..."
-              fullWidth
-              size="lg"
+              className="w-full py-4 px-6 bg-[#B0EACD] text-[#2F4F4F] font-bold rounded-xl hover:bg-[#9ed9bc] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-nunito shadow-md hover:shadow-lg flex items-center justify-center"
             >
+              <span className="mr-2">🎲</span>
               Join Game
             </Button>
           </form>
         </div>
-      </Card>
+      </div>
     </motion.div>
   );
 } 

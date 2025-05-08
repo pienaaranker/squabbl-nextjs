@@ -20,50 +20,63 @@ export default function PauseScreen({
   roundName,
   roundInstructions
 }: PauseScreenProps) {
+  // Determine round color
+  let roundColor = 'text-[#A8DADC]'; // Default blue for Describe It
+  let roundBorder = 'border-[#A8DADC]';
+  if (roundName.toLowerCase().includes('act')) {
+    roundColor = 'text-[#B0EACD]';
+    roundBorder = 'border-[#B0EACD]';
+  }
+  if (roundName.toLowerCase().includes('one word')) {
+    roundColor = 'text-[#FFD166]';
+    roundBorder = 'border-[#FFD166]';
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="max-w-2xl w-full bg-white">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Get Ready!</h2>
-          <div className="space-y-4">
-            <div className="bg-sky-50 border-2 border-sky-200 rounded-lg p-4">
-              <p className="text-lg font-semibold text-sky-800">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-lg border-4 border-[#B0EACD] p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold font-fredoka mb-4 flex items-center justify-center gap-2">
+            <span className="text-3xl">⏳</span>
+            Get Ready!
+          </h2>
+          <div className="space-y-6">
+            <div className="bg-[#F8F8F8] border-2 border-[#B0EACD] rounded-xl p-6">
+              <p className="text-xl font-semibold text-[#2F4F4F] font-fredoka mb-1">
                 {teamName}&apos;s Turn
               </p>
-              <p className="text-md text-sky-700">
+              <p className="text-lg text-[#2F4F4F] font-nunito">
                 {playerName} will be describing
                 {isDescriber && <Badge variant="primary" size="sm" className="ml-2">That&apos;s you!</Badge>}
               </p>
             </div>
-            
-            <div className="bg-neutral-50 border-2 border-neutral-200 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2">
+            <div className={`bg-[#F8F8F8] border-2 rounded-xl p-6 ${roundBorder}`}>
+              <h3 className={`text-2xl font-bold font-fredoka mb-2 ${roundColor}`}>
                 {roundName}
               </h3>
-              <p className="text-neutral-600">
+              <p className="text-[#2F4F4F] text-lg font-nunito">
                 {roundInstructions}
               </p>
             </div>
           </div>
         </div>
-
         {isDescriber ? (
           <div className="flex justify-center">
             <Button
               onClick={onStartTurn}
               variant="primary"
               size="lg"
-              className="animate-pulse"
+              className="animate-pulse w-full max-w-xs py-4 px-8 bg-[#EF798A] text-white font-bold rounded-xl hover:bg-[#e86476] transition-colors duration-200 shadow-md hover:shadow-lg font-nunito text-lg"
             >
               Start Your Turn
             </Button>
           </div>
         ) : (
-          <p className="text-center text-neutral-600">
+          <p className="text-center text-[#2F4F4F] text-lg font-nunito">
             Waiting for {playerName} to start their turn...
           </p>
         )}
-      </Card>
+      </div>
     </div>
   );
 } 
