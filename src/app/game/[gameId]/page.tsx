@@ -424,6 +424,12 @@ export default function GamePage() {
     }
   };
   
+  // Determine round accent color and icon
+  let roundAccent = '#A8DADC'; // Blue for Describe It
+  let roundIcon = '🗣️';
+  if (game?.currentRound === 2) { roundAccent = '#B0EACD'; roundIcon = '🎭'; }
+  if (game?.currentRound === 3) { roundAccent = '#FFD166'; roundIcon = '💭'; }
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-softwhite p-6 flex flex-col items-center justify-center">
@@ -450,7 +456,7 @@ export default function GamePage() {
   
   return (
     <motion.div
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-[#F8F8F8]"
       variants={pageVariants}
       initial="initial"
       animate="enter"
@@ -467,17 +473,17 @@ export default function GamePage() {
           roundInstructions={getRoundInstructions(game.currentRound)}
         />
       )}
-      
-      <div className="w-full mx-0 sm:container sm:mx-auto p-0 sm:py-4 sm:px-2 md:py-8 md:px-4">
-        <Grid columns={1} gap="xs" animate>
+      <div className="w-full max-w-6xl mx-auto p-4 md:p-8">
+        <div className="flex flex-col gap-8 w-full">
           {/* Game Info Section */}
-          <Card className="w-full p-1 sm:p-2 md:p-4">
-            <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
-              <div className="flex flex-col gap-1 sm:gap-2">
-                <h3 className="text-xs sm:text-sm font-bold font-poppins">
+          <div className={`p-8 bg-white rounded-2xl shadow-lg border-4`} style={{ borderColor: roundAccent }}>
+            <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <h2 className={`text-2xl font-bold mb-2 font-fredoka flex items-center gap-2`} style={{ color: roundAccent }}>
+                  <span className="text-2xl">{roundIcon}</span>
                   Round {game?.currentRound || '?'}: {getRoundName(game?.currentRound ?? null)}
-                </h3>
-                <p className="text-xs sm:text-sm text-neutral-dark">
+                </h2>
+                <p className="text-base font-nunito text-[#2F4F4F]">
                   {getRoundInstructions(game?.currentRound ?? null)}
                 </p>
               </div>
@@ -487,58 +493,65 @@ export default function GamePage() {
                 </Badge>
               </div>
             </div>
-          </Card>
-
+          </div>
           {/* Main Game Area */}
-          <div className="flex flex-col lg:flex-row gap-3">
+          <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Column: Word display */}
             <div className="w-full lg:w-2/3">
-              <WordCard 
-                isDescriber={isDescriber}
-                isOnActiveTeam={isOnActiveTeam()}
-                currentWord={currentWord}
-                activePlayerName={getActivePlayerName()}
-                onCorrectGuess={handleCorrectGuess}
-                onSkip={handleSkip}
-                isCorrectGuessProcessing={isCorrectGuessProcessing}
-                isSkipProcessing={isSkipProcessing}
-                seconds={timeLeft}
-                totalSeconds={60}
-              />
+              <div className={`p-8 bg-white rounded-2xl shadow-lg border-4`} style={{ borderColor: roundAccent }}>
+                <WordCard 
+                  isDescriber={isDescriber}
+                  isOnActiveTeam={isOnActiveTeam()}
+                  currentWord={currentWord}
+                  activePlayerName={getActivePlayerName()}
+                  onCorrectGuess={handleCorrectGuess}
+                  onSkip={handleSkip}
+                  isCorrectGuessProcessing={isCorrectGuessProcessing}
+                  isSkipProcessing={isSkipProcessing}
+                  seconds={timeLeft}
+                  totalSeconds={60}
+                />
+              </div>
             </div>
-            
             {/* Right Column: Teams and Scoreboard */}
             <div className="w-full lg:w-1/3">
-              <Card className="sticky top-2">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs sm:text-sm font-bold font-poppins">Teams & Scores</h3>
+              <div className="p-8 bg-white rounded-2xl shadow-lg border-4 border-[#B0EACD] sticky top-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-[#B0EACD] font-fredoka flex items-center gap-2">
+                    <span className="text-2xl">👥</span>
+                    Teams & Scores
+                  </h2>
                 </div>
-                
-                <div className="space-y-2 max-h-[40vh] lg:max-h-[60vh] overflow-y-auto">
-                  {teams.map(team => {
+                <div className="space-y-4 max-h-[40vh] lg:max-h-[60vh] overflow-y-auto">
+                  {teams.map((team, idx) => {
                     // Filter players for this team
                     const teamPlayers = players.filter(player => player.teamId === team.id);
                     // Find active speaker if they belong to this team
                     const activeSpeakerPlayer = game?.activePlayerId ? 
                       players.find(p => p.id === game.activePlayerId && p.teamId === team.id) : 
                       null;
-                    
                     return (
-                      <TeamCard 
+                      <div
                         key={team.id}
-                        team={team}
-                        players={teamPlayers}
-                        isActive={team.id === game?.activeTeamId}
-                        activeSpeaker={activeSpeakerPlayer}
-                        showScore={true}
-                      />
+                        className={`rounded-xl border-2 p-4 flex items-center gap-4 ${team.id === game?.activeTeamId ? 'border-[#FFD166] bg-[#FFF9E3]' : 'border-[#B0EACD] bg-[#E6FAF3]'}`}
+                      >
+                        <TeamCard 
+                          team={team}
+                          players={teamPlayers}
+                          isActive={team.id === game?.activeTeamId}
+                          activeSpeaker={activeSpeakerPlayer}
+                          showScore={true}
+                          className="flex-1"
+                        />
+                        <span className={`text-2xl font-bold font-fredoka ${team.id === game?.activeTeamId ? 'text-[#FFD166]' : 'text-[#2F4F4F]'}`}>{team.score}</span>
+                      </div>
                     );
                   })}
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
-        </Grid>
+        </div>
       </div>
     </motion.div>
   );
