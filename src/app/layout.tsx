@@ -32,6 +32,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${nunito.variable} ${poppins.variable}`}>
+      <head>
+        <link rel="icon" href="/squabbl_icon_64.png" type="image/png" sizes="64x64" />
+      </head>
       <body className="min-h-screen bg-background text-foreground flex flex-col font-nunito antialiased">
         <Toaster
           position="top-center"

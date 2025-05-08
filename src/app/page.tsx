@@ -86,18 +86,12 @@ export default function Home() {
       <div className="w-full max-w-4xl mx-auto">
         {/* Hero Section with enhanced styling */}
         <div className="text-center mb-12 relative">
-          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-full">
-            <div className="flex justify-center space-x-4">
-              {/* Decorative elements using brand colors */}
-              <span className="text-4xl animate-bounce-slow">🎲</span>
-              <span className="text-4xl animate-bounce-slow delay-100">🎮</span>
-              <span className="text-4xl animate-bounce-slow delay-200">🎯</span>
-            </div>
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 relative inline-block font-fredoka bg-gradient-to-r from-[#EF798A] to-[#A8DADC] bg-clip-text text-transparent">
-            Squabbl
-            <span className="absolute -top-4 -right-4 text-2xl transform rotate-12 animate-pulse">✨</span>
-          </h1>
+          <img
+            src="/squabbl_logo.png"
+            alt="Squabbl logo"
+            className="mx-auto mb-4 max-w-full h-auto"
+            style={{ maxWidth: '500px' }}
+          />
           <p className="text-xl text-[#2F4F4F] max-w-2xl mx-auto font-nunito leading-relaxed">
             The ultimate party word game where teams compete through
             <span className="text-[#EF798A] font-semibold"> description</span>,
@@ -169,7 +163,7 @@ export default function Home() {
                   onChange={(e) => setJoinGameCode(e.target.value.toUpperCase())}
                   placeholder="Enter 4-character code"
                   maxLength={4}
-                  className="w-full p-4 border-2 border-[#B0EACD] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FFD166] bg-[#F8F8F8] placeholder-slate-400 font-nunito tracking-wider text-center text-lg transition-all duration-200"
+                  className="w-full p-4 border-2 border-[#B0EACD] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FFD166] bg-[#F8F8F8] placeholder-slate-400 font-nunito transition-all duration-200"
                 />
               </div>
               
