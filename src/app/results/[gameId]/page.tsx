@@ -144,29 +144,35 @@ export default function ResultsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-softwhite p-6">
+    <div className="min-h-screen bg-[#F8F8F8] p-6">
       {showConfetti && !loading && !error && (
         <Confetti
           width={width}
           height={height}
           numberOfPieces={200}
           recycle={false}
-          colors={['#60A5FA', '#34D399', '#F59E0B', '#EC4899']}
+          colors={['#A8DADC', '#B0EACD', '#FFD166', '#EF798A']}
         />
       )}
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-slate-800 mb-2">Game Results</h1>
-        <p className="text-xl text-slate-600">Congratulations to all players!</p>
+      <header className="mb-10 text-center">
+        <h1 className="text-4xl md:text-5xl font-bold text-[#A8DADC] mb-2 font-fredoka flex items-center justify-center gap-3">
+          <span className="text-4xl md:text-5xl">🎉</span>
+          Game Results
+        </h1>
+        <p className="text-xl text-[#2F4F4F] font-nunito">Congratulations to all players!</p>
       </header>
 
-      <Card className="max-w-2xl mx-auto mb-8">
+      <div className="max-w-2xl mx-auto mb-10 p-8 bg-white rounded-2xl shadow-lg border-4 border-[#A8DADC]">
         {winningTeam && (
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Winner</h2>
-            <Card className="bg-sunny-100 border-2 border-sunny-300">
-              <p className="text-3xl font-bold text-slate-800">{winningTeam.name}</p>
-              <p className="text-xl text-slate-700">Score: {winningTeam.score}</p>
-              <p className="mt-2 text-slate-600">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-[#A8DADC] mb-4 font-fredoka flex items-center justify-center gap-2">
+              <span className="text-3xl">🏆</span>
+              Winner
+            </h2>
+            <div className="p-6 bg-[#FFF9E3] rounded-xl border-2 border-[#FFD166] mb-4">
+              <p className="text-3xl font-bold text-[#2F4F4F] font-fredoka mb-2">{winningTeam.name}</p>
+              <p className="text-xl text-[#2F4F4F] font-nunito">Score: {winningTeam.score}</p>
+              <p className="mt-2 text-[#2F4F4F] font-nunito">
                 Team Members: {
                   players
                     .filter(p => p.teamId === winningTeam.id)
@@ -174,33 +180,41 @@ export default function ResultsPage() {
                     .join(', ')
                 }
               </p>
-            </Card>
+            </div>
           </div>
         )}
 
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Final Scores</h2>
-        <div className="space-y-4 mb-8">
+        <h2 className="text-2xl font-bold text-[#B0EACD] mb-6 font-fredoka flex items-center gap-2">
+          <span className="text-2xl">📊</span>
+          Final Scores
+        </h2>
+        <div className="space-y-4 mb-10">
           {teams.map((team, index) => (
-            <TeamCard
+            <div
               key={team.id}
-              team={team}
-              players={players.filter(p => p.teamId === team.id)}
-              isActive={index === 0}
-              className={index === 0 ? 'bg-sky-100' : ''}
-            />
+              className={`rounded-xl border-2 p-4 flex items-center gap-4 ${index === 0 ? 'border-[#FFD166] bg-[#FFF9E3]' : 'border-[#B0EACD] bg-[#E6FAF3]'}`}
+            >
+              <TeamCard
+                team={team}
+                players={players.filter(p => p.teamId === team.id)}
+                isActive={index === 0}
+                className="flex-1"
+              />
+              <span className={`text-2xl font-bold font-fredoka ${index === 0 ? 'text-[#FFD166]' : 'text-[#2F4F4F]'}`}>{team.score}</span>
+            </div>
           ))}
         </div>
 
         <div className="flex justify-center">
           <Button
             onClick={handlePlayAgain}
-            variant="primary"
-            size="lg"
+            className="w-full max-w-xs py-4 px-8 bg-[#EF798A] text-white font-bold rounded-xl hover:bg-[#e86476] transition-colors duration-200 shadow-md hover:shadow-lg font-nunito text-lg flex items-center justify-center gap-2"
           >
+            <span className="text-2xl">🔄</span>
             Play Again
           </Button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 } 
