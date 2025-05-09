@@ -89,8 +89,7 @@ export default function Home() {
           <img
             src="/squabbl_logo.png"
             alt="Squabbl logo"
-            className="mx-auto mb-4 max-w-full h-auto"
-            style={{ maxWidth: '500px' }}
+            className="mx-auto mb-4 max-w-full h-auto w-40 sm:w-60 md:w-80 lg:w-[500px]"
           />
           <p className="text-xl text-[#2F4F4F] max-w-2xl mx-auto font-nunito leading-relaxed">
             The ultimate party word game where teams compete through
