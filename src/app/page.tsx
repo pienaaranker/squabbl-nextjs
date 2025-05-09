@@ -93,7 +93,7 @@ export default function Home() {
           />
           <p className="text-xl text-[#2F4F4F] max-w-2xl mx-auto font-nunito leading-relaxed">
             The ultimate party word game where teams compete through
-            <span className="text-[#EF798A] font-semibold"> description</span>,
+            <span className="text-[#A8DADC] font-semibold"> description</span>,
             <span className="text-[#B0EACD] font-semibold"> charades</span>, and
             <span className="text-[#FFD166] font-semibold"> one-word clues</span>!
           </p>
