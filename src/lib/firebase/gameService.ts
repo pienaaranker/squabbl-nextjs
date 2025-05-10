@@ -806,3 +806,14 @@ export async function createGame(code: string): Promise<string> {
     throw new Error("Failed to create game");
   }
 }
+
+/**
+ * Updates the settings for a game.
+ * @param {string} gameId - The ID of the game.
+ * @param {object} settings - The settings object to update.
+ * @returns {Promise<void>}
+ */
+export async function updateGameSettings(gameId: string, settings: { wordCountPerPerson: number; roundLengthSeconds: number }) {
+  const gameRef = doc(db, "games", gameId);
+  await updateDoc(gameRef, { settings });
+}

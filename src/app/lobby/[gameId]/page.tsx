@@ -17,6 +17,7 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
 import { Grid } from '@/app/components/layouts/Grid';
 import { AnimatedIcon } from '@/app/components/ui';
+import LobbySettings from './LobbySettings';
 
 export default function LobbyPage() {
   const params = useParams<{ gameId: string }>();
@@ -662,6 +663,12 @@ export default function LobbyPage() {
             </AnimatePresence>
             {wordError && <p className="text-red-500 text-sm mt-2 font-nunito">{wordError}</p>}
           </div>
+          {/* Lobby Settings Card (host only, below Add Words) */}
+          <LobbySettings
+            gameId={gameId}
+            initialSettings={game?.settings}
+            isHost={isHost}
+          />
           {/* Game Start Requirements */}
           {startGameErrors.length > 0 && (
             <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 font-nunito animate-shake">
