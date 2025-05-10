@@ -430,6 +430,14 @@ export default function GamePage() {
   if (game?.currentRound === 2) { roundAccent = '#B0EACD'; roundIcon = '🎭'; }
   if (game?.currentRound === 3) { roundAccent = '#FFD166'; roundIcon = '💭'; }
   
+  if (game?.state === 'finished') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F8F8]">
+        <LoadingSpinner size="lg" text="Redirecting to results..." />
+      </div>
+    );
+  }
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-softwhite p-6 flex flex-col items-center justify-center">
@@ -540,7 +548,7 @@ export default function GamePage() {
                           players={teamPlayers}
                           isActive={team.id === game?.activeTeamId}
                           activeSpeaker={activeSpeakerPlayer}
-                          showScore={true}
+                          showScore={false}
                           className="flex-1"
                         />
                         <span className={`text-2xl font-bold font-fredoka ${team.id === game?.activeTeamId ? 'text-[#FFD166]' : 'text-[#2F4F4F]'}`}>{team.score}</span>
