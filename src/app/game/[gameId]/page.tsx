@@ -54,6 +54,9 @@ export default function GamePage() {
   // Timer reference
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Helper to get the current round length from settings (default 60)
+  const roundLength = game?.settings?.roundLengthSeconds ?? 60;
+  
   // Get round display name
   const getRoundName = (round: number | null) => {
     switch (round) {
@@ -192,7 +195,7 @@ export default function GamePage() {
   useEffect(() => {
     if (!game?.turnStartTime || game?.turnState === 'paused') {
       // If no turnStartTime is available or game is paused, set a default timer
-      setTimeLeft(60);
+      setTimeLeft(roundLength);
       setIsTimerRunning(false);
       return;
     }
@@ -202,7 +205,7 @@ export default function GamePage() {
       const now = Date.now();
       const turnStart = game.turnStartTime || now; // Default to now if turnStartTime is null
       const elapsed = Math.floor((now - turnStart) / 1000);
-      const remaining = Math.max(0, 60 - elapsed);
+      const remaining = Math.max(0, roundLength - elapsed);
       return remaining;
     };
 
@@ -237,7 +240,7 @@ export default function GamePage() {
         clearInterval(timerRef.current);
       }
     };
-  }, [game?.turnStartTime, isDescriber]);
+  }, [game?.turnStartTime, isDescriber, roundLength]);
   
   // Function to start the timer
   const startTimer = async () => {
@@ -387,14 +390,12 @@ export default function GamePage() {
   // Handle skip
   const handleSkip = async () => {
     if (!currentWord || !game?.currentRound) return;
-    
     setIsSkipProcessing(true);
     try {
       // Calculate the new remaining time after penalty
       const now = Date.now();
       const currentTurnStart = game.turnStartTime || now;
-      const currentTimeLeft = Math.max(0, 60 - Math.floor((now - currentTurnStart) / 1000));
-      
+      const currentTimeLeft = Math.max(0, roundLength - Math.floor((now - currentTurnStart) / 1000));
       // If penalty would reduce time below 0, end the turn
       if (currentTimeLeft <= 10) {
         await advanceToNextTeam(gameId);
@@ -402,19 +403,15 @@ export default function GamePage() {
         toast.error("Time's up! Next team's turn.");
         return;
       }
-      
       // Get a new word for the current team's turn
       const word = await getRandomUnguessedWord(gameId, game.currentRound);
       setCurrentWord(word);
-      
       // Update turnStartTime to apply the 10-second penalty
       const gameRef = doc(db, "games", gameId);
       const newTurnStart = currentTurnStart - (10 * 1000); // Subtract 10 seconds from start time to reduce remaining time
-      
       await updateDoc(gameRef, {
         turnStartTime: newTurnStart
       });
-      
       toast.error("Word skipped! -10 seconds");
     } catch (error) {
       console.error("Error handling skip:", error);
@@ -517,7 +514,7 @@ export default function GamePage() {
                   isCorrectGuessProcessing={isCorrectGuessProcessing}
                   isSkipProcessing={isSkipProcessing}
                   seconds={timeLeft}
-                  totalSeconds={60}
+                  totalSeconds={roundLength}
                 />
               </div>
             </div>
