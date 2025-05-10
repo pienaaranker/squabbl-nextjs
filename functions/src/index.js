@@ -28,7 +28,7 @@ async function deleteSubcollections(docRef) {
 /**
  * Scheduled function to delete expired games and their subcollections.
  */
-export const deleteExpiredGames = onSchedule("every 10 minutes", async (event) => {
+export const deleteExpiredGames = onSchedule("every 24 hours", async (event) => {
   const now = Timestamp.now();
   const expiredThreshold = Timestamp.fromDate(new Date(now.toDate().getTime() - 24 * 60 * 60 * 1000)); // 24 hours ago
   const expiredGamesSnap = await db.collection("games")
