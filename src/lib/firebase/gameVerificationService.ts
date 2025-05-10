@@ -14,13 +14,15 @@ export class GameVerificationService {
    * @param teams - Array of teams in the game
    * @param players - Array of players in the game
    * @param isHost - Whether the current user is the host
+   * @param wordLimit - The required number of words per player
    * @returns A VerificationResult with validation status and any error messages
    */
   static async verifyGameCanStart(
     gameId: string,
     teams: Team[],
     players: Player[],
-    isHost: boolean
+    isHost: boolean,
+    wordLimit: number = 5
   ): Promise<VerificationResult> {
     const errors: string[] = [];
     
@@ -67,16 +69,16 @@ export class GameVerificationService {
     
     console.log(`Total words in game: ${allWords.length}`);
     
-    // Verify each player has added 5 words
+    // Verify each player has added the required number of words
     const playersWithNotEnoughWords = players.filter(player => {
       const playerWordCount = allWords.filter(w => w.submittedByPlayerId === player.id).length;
       console.log(`Player ${player.name} (${player.id}) has submitted ${playerWordCount} words`);
-      return playerWordCount < 5;
+      return playerWordCount < wordLimit;
     });
     
     if (playersWithNotEnoughWords.length > 0) {
       console.log("❌ Validation failed: Players with not enough words:", playersWithNotEnoughWords);
-      errors.push(`The following players need to add 5 words: ${playersWithNotEnoughWords.map(p => p.name).join(", ")}`);
+      errors.push(`The following players need to add ${wordLimit} words: ${playersWithNotEnoughWords.map(p => p.name).join(", ")}`);
     } else {
       console.log("✅ Validation passed: All players have added enough words");
     }
@@ -110,13 +112,15 @@ export class GameVerificationService {
    * @param players - Array of players in the game
    * @param words - Array of words in the game, or gameId to fetch all words
    * @param isHost - Whether the current user is the host
+   * @param wordLimit - The required number of words per player
    * @returns Whether the game can be started based on current state
    */
   static async canStartGame(
     teams: Team[],
     players: Player[],
     wordsOrGameId: Word[] | string,
-    isHost: boolean
+    isHost: boolean,
+    wordLimit: number = 5
   ): Promise<boolean> {
     // Host check
     if (!isHost) return false;
@@ -135,7 +139,7 @@ export class GameVerificationService {
       words = wordsOrGameId;
     }
     
-    if (players.some(player => words.filter(w => w.submittedByPlayerId === player.id).length < 5)) return false;
+    if (players.some(player => words.filter(w => w.submittedByPlayerId === player.id).length < wordLimit)) return false;
     
     return true;
   }
@@ -146,13 +150,15 @@ export class GameVerificationService {
    * @param players - Array of players in the game
    * @param words - Array of words in the game, or gameId to fetch all words
    * @param isHost - Whether the current user is the host
+   * @param wordLimit - The required number of words per player
    * @returns Array of error messages explaining why the game can't start
    */
   static async getGameStartErrors(
     teams: Team[],
     players: Player[],
     wordsOrGameId: Word[] | string,
-    isHost: boolean
+    isHost: boolean,
+    wordLimit: number = 5
   ): Promise<string[]> {
     const errors: string[] = [];
     
@@ -176,8 +182,8 @@ export class GameVerificationService {
       words = wordsOrGameId;
     }
     
-    if (players.some(player => words.filter(w => w.submittedByPlayerId === player.id).length < 5)) {
-      errors.push("Each player needs to add 5 words");
+    if (players.some(player => words.filter(w => w.submittedByPlayerId === player.id).length < wordLimit)) {
+      errors.push(`Each player needs to add ${wordLimit} words`);
     }
     
     return errors;

@@ -14,6 +14,11 @@ export interface Game {
   lastSpeakerIds?: { [teamId: string]: string }; // Maps team IDs to their last active speaker's ID
   lastGuessedWord?: { text: string; teamId: string; timestamp: number } | null; // Info about the last correctly guessed word
   turnState: 'paused' | 'active' | null; // Tracks if we're in the pause state between turns
+  settings?: {
+    wordCountPerPerson: number;
+    roundLengthSeconds: number;
+    skipPenaltySeconds: number; // Must be <= roundLengthSeconds
+  };
   // Potentially add hostId if needed for specific controls
 }
 

@@ -17,6 +17,7 @@ import LoadingSpinner from '@/app/components/LoadingSpinner';
 import TeamCard from '@/app/components/TeamCard';
 import { Grid } from '@/app/components/layouts/Grid';
 import { AnimatedIcon } from '@/app/components/ui';
+import LobbySettings from './LobbySettings';
 
 export default function LobbyPage() {
   const params = useParams<{ gameId: string }>();
@@ -49,6 +50,10 @@ export default function LobbyPage() {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [startGameErrors, setStartGameErrors] = useState<string[]>([]);
   const [canStart, setCanStart] = useState<boolean>(false);
+
+  // Helper to get the current word limit from settings (default 5)
+  const wordLimit = game?.settings?.wordCountPerPerson ?? 5;
+  const playerOverLimit = words.length > wordLimit;
 
   // Effect for setting shareable link
   useEffect(() => {
@@ -201,20 +206,25 @@ export default function LobbyPage() {
   useEffect(() => {
     const checkGameStartConditions = async () => {
       if (!gameId || !playerId) return;
-      
+      let errors: string[] = [];
+      // Check if any player exceeds the word limit
+      players.forEach((player) => {
+        const playerWords = words;
+        if (player.id === playerId && playerWords.length > wordLimit) {
+          errors.push('You have more words than the current limit. Please remove words to match the new limit.');
+        }
+      });
       try {
-        const canStartGame = await GameVerificationService.canStartGame(teams, players, gameId, isHost);
-        setCanStart(canStartGame);
-        
-        const errors = await GameVerificationService.getGameStartErrors(teams, players, gameId, isHost);
-        setStartGameErrors(errors);
+        const canStartGame = await GameVerificationService.canStartGame(teams, players, gameId, isHost, wordLimit);
+        setCanStart(canStartGame && errors.length === 0);
+        const backendErrors = await GameVerificationService.getGameStartErrors(teams, players, gameId, isHost, wordLimit);
+        setStartGameErrors([...errors, ...backendErrors]);
       } catch (err) {
         console.error("Error checking game start conditions:", err);
       }
     };
-    
     checkGameStartConditions();
-  }, [gameId, teams, players, isHost, playerId, allWordsCount]);
+  }, [gameId, teams, players, isHost, playerId, allWordsCount, words.length, wordLimit]);
 
   // Effect for checking if the game has started and handling reconnection vs. new joins
   useEffect(() => {
@@ -283,10 +293,9 @@ export default function LobbyPage() {
   const handleAddWord = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWord.trim() || !gameId || !playerId) return;
-
     setWordError(null);
     try {
-      await addWord(gameId, playerId, newWord.trim());
+      await addWord(gameId, playerId, newWord.trim(), wordLimit);
       setNewWord(''); // Clear input field
       // Refresh player words
       const playerWords = await getPlayerWords(gameId, playerId);
@@ -300,12 +309,18 @@ export default function LobbyPage() {
   // Handle adding AI-generated words
   const handleAddAIWords = async () => {
     if (!gameId || !playerId) return;
-
     setIsAddingAIWords(true);
     setWordError(null);
     try {
+      // Only generate up to the remaining allowed words
+      const remaining = wordLimit - words.length;
+      if (remaining <= 0) {
+        setWordError(`You have reached the word limit (${wordLimit}). Remove words to add more.`);
+        setIsAddingAIWords(false);
+        return;
+      }
       // Pass the current input text as the description
-      await addAIWords(gameId, playerId, newWord.trim());
+      await addAIWords(gameId, playerId, newWord.trim(), remaining, wordLimit);
       // Clear input field after successful generation
       setNewWord('');
       // Refresh player words
@@ -347,7 +362,6 @@ export default function LobbyPage() {
     console.log("Teams:", teams);
     console.log("Players:", players);
     console.log("Words:", words);
-    
     setIsStartingGame(true);
     try {
       // Use the verification service
@@ -356,9 +370,9 @@ export default function LobbyPage() {
         gameId,
         teams,
         players,
-        isHost
+        isHost,
+        wordLimit
       );
-      
       if (!verificationResult.valid) {
         // Show the first error to the user
         console.error("❌ Validation failed:", verificationResult.errors);
@@ -366,7 +380,6 @@ export default function LobbyPage() {
         setIsStartingGame(false);
         return;
       }
-      
       console.log("✅ Validation passed, starting game");
       await startGame(gameId);
       console.log("🚀 Game started successfully!");
@@ -590,11 +603,11 @@ export default function LobbyPage() {
                 <span className="text-2xl mr-3">📝</span>
                 Add Words
               </h2>
-              <span className="text-xl font-bold text-neutral-dark font-nunito">({words.length}/5)</span>
+              <span className="text-xl font-bold text-neutral-dark font-nunito">({words.length}/{wordLimit})</span>
             </div>
             <form onSubmit={handleAddWord} className="mb-2">
               <p className="text-sm text-neutral-dark mb-2 font-nunito">
-                Enter a word to add manually, or describe words you'd like AI to generate (max 5 words per player)
+                Enter a word to add manually, or describe words you'd like AI to generate (max {wordLimit} words per player)
               </p>
               <div className="flex flex-col md:flex-row items-stretch gap-2">
                 <input
@@ -603,7 +616,7 @@ export default function LobbyPage() {
                   onChange={(e) => setNewWord(e.target.value)}
                   className="w-full p-4 border-2 border-[#B0EACD] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FFD166] bg-[#F8F8F8] placeholder-slate-400 font-nunito transition-all duration-200"
                   placeholder="e.g., 'beach' or 'summer vacation words'"
-                  disabled={words.length >= 5}
+                  disabled={words.length >= wordLimit || playerOverLimit}
                 />
                 <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                   <Button
@@ -612,14 +625,14 @@ export default function LobbyPage() {
                     isLoading={isAddingAIWords}
                     className="w-full md:w-auto"
                     rightIcon={<span>✏️</span>}
-                    disabled={!newWord.trim() || words.length >= 5 || isAddingAIWords}
+                    disabled={!newWord.trim() || words.length >= wordLimit || isAddingAIWords || playerOverLimit}
                   >
                     Add Word
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={handleAddAIWords}
-                    disabled={isAddingAIWords || !playerId || game?.state !== 'lobby' || words.length >= 5}
+                    disabled={isAddingAIWords || !playerId || game?.state !== 'lobby' || words.length >= wordLimit || playerOverLimit}
                     className="w-full md:w-auto"
                     rightIcon={<AnimatedIcon icon="🤖" />}
                   >
@@ -628,6 +641,12 @@ export default function LobbyPage() {
                 </div>
               </div>
             </form>
+            {/* Warning if player is over the limit */}
+            {playerOverLimit && (
+              <div className="bg-yellow-100 border-2 border-yellow-300 rounded-xl p-3 mb-2 text-yellow-800 font-nunito">
+                You have more words than the current limit ({wordLimit}). Please remove words to match the new limit.
+              </div>
+            )}
             {/* Display Existing Player Words */}
             <AnimatePresence>
               <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-2">
@@ -662,6 +681,12 @@ export default function LobbyPage() {
             </AnimatePresence>
             {wordError && <p className="text-red-500 text-sm mt-2 font-nunito">{wordError}</p>}
           </div>
+          {/* Lobby Settings Card (host only, below Add Words) */}
+          <LobbySettings
+            gameId={gameId}
+            initialSettings={game?.settings}
+            isHost={isHost}
+          />
           {/* Game Start Requirements */}
           {startGameErrors.length > 0 && (
             <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 font-nunito animate-shake">

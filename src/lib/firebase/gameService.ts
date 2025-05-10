@@ -183,17 +183,17 @@ export async function updatePlayerTeam(gameId: string, playerId: string, teamId:
  * @param {string} gameId - The ID of the game to add the word to.
  * @param {string} playerId - The ID of the player submitting the word.
  * @param {string} wordText - The text of the word to add.
+ * @param {number} wordLimit - The maximum number of words per player allowed.
  * @returns {Promise<string>} The ID of the newly created word document.
  * @throws {Error} If there's an issue adding the word.
  */
-export async function addWord(gameId: string, playerId: string, wordText: string): Promise<string> {
+export async function addWord(gameId: string, playerId: string, wordText: string, wordLimit: number = 5): Promise<string> {
   try {
     // Check current word count for this player
     const playerWords = await getPlayerWords(gameId, playerId);
-    if (playerWords.length >= 5) {
-      throw new Error("You've reached the maximum limit of 5 words per player.");
+    if (playerWords.length >= wordLimit) {
+      throw new Error(`You've reached the maximum limit of ${wordLimit} words per player.`);
     }
-
     const wordsCollectionRef = collection(db, "games", gameId, "words");
     const newWordData: Omit<Word, 'id'> = {
       text: wordText.trim(),
@@ -285,33 +285,31 @@ export async function getWordCount(gameId: string): Promise<number> {
  * @param {string} playerId - The ID of the player requesting AI words.
  * @param {string} description - Description of the type of words to generate (optional).
  * @param {number} count - Number of words to generate (default: 5).
+ * @param {number} wordLimit - The maximum number of words per player allowed.
  * @returns {Promise<string[]>} The IDs of the newly created word documents.
  */
 export async function addAIWords(
   gameId: string, 
   playerId: string, 
   description: string = '', 
-  count: number = 5
+  count: number = 5,
+  wordLimit: number = 5
 ): Promise<string[]> {
   try {
     // Check current word count for this player
     const playerWords = await getPlayerWords(gameId, playerId);
-    const remainingSlots = 5 - playerWords.length;
-    
+    const remainingSlots = wordLimit - playerWords.length;
     if (remainingSlots <= 0) {
-      throw new Error("You've reached the maximum limit of 5 words per player.");
+      throw new Error(`You've reached the maximum limit of ${wordLimit} words per player.`);
     }
-
     // Adjust count to not exceed the remaining slots
     const adjustedCount = Math.min(count, remainingSlots);
-    
     // Generate words using Gemini
     const words = await generateWords(description, adjustedCount);
-    
     // Add the words to the game
     const wordIds: string[] = [];
     for (const word of words) {
-      const wordId = await addWord(gameId, playerId, word);
+      const wordId = await addWord(gameId, playerId, word, wordLimit);
       wordIds.push(wordId);
     }
     return wordIds;
@@ -343,9 +341,16 @@ export async function startGame(gameId: string): Promise<void> {
     const players = await getAllPlayers(gameId);
     console.log(`Players (${players.length}):`, players);
     
+    // Fetch game settings for word limit
+    const settingsRef = doc(db, "games", gameId);
+    const settingsSnap = await getDoc(settingsRef);
+    let wordLimit = 5;
+    if (settingsSnap.exists() && settingsSnap.data().settings && typeof settingsSnap.data().settings.wordCountPerPerson === 'number') {
+      wordLimit = settingsSnap.data().settings.wordCountPerPerson;
+    }
     // 3. Verify game can be started
     console.log("3️⃣ Verifying game can be started");
-    const verificationResult = await GameVerificationService.verifyGameCanStart(gameId, teams, players, true);
+    const verificationResult = await GameVerificationService.verifyGameCanStart(gameId, teams, players, true, wordLimit);
     if (!verificationResult.valid) {
       console.error("❌ Game validation failed:", verificationResult.errors);
       throw new Error(verificationResult.errors[0]);
@@ -805,4 +810,15 @@ export async function createGame(code: string): Promise<string> {
     console.error("Error creating game:", error);
     throw new Error("Failed to create game");
   }
+}
+
+/**
+ * Updates the settings for a game.
+ * @param {string} gameId - The ID of the game.
+ * @param {object} settings - The settings object to update.
+ * @returns {Promise<void>}
+ */
+export async function updateGameSettings(gameId: string, settings: { wordCountPerPerson: number; roundLengthSeconds: number; skipPenaltySeconds: number }) {
+  const gameRef = doc(db, "games", gameId);
+  await updateDoc(gameRef, { settings });
 }

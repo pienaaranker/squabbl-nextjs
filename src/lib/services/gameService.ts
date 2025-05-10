@@ -20,15 +20,16 @@ export async function addAIWords(
   gameId: string,
   playerId: string,
   description: string = '',
-  count: number = 5
+  count: number = 5,
+  wordLimit: number = 5
 ): Promise<string[]> {
   try {
     // Check current word count for this player
     const playerWords = await getPlayerWords(gameId, playerId);
-    const remainingSlots = 5 - playerWords.length;
+    const remainingSlots = wordLimit - playerWords.length;
     
     if (remainingSlots <= 0) {
-      throw new Error("You've reached the maximum limit of 5 words per player.");
+      throw new Error(`You've reached the maximum limit of ${wordLimit} words per player.`);
     }
 
     // Adjust count to not exceed the remaining slots

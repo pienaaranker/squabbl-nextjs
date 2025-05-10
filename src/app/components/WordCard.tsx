@@ -16,6 +16,7 @@ interface WordCardProps {
   seconds: number;
   totalSeconds: number;
   className?: string;
+  skipPenaltySeconds?: number;
 }
 
 export default function WordCard({
@@ -29,7 +30,8 @@ export default function WordCard({
   isSkipProcessing,
   seconds,
   totalSeconds,
-  className = ''
+  className = '',
+  skipPenaltySeconds = 10,
 }: WordCardProps) {
   if (isDescriber) {
     return (
@@ -75,7 +77,7 @@ export default function WordCard({
             loadingText="Skipping..."
             leftIcon={<span className="text-lg sm:text-xl">⟳</span>}
           >
-            Skip (-10s)
+            {`Skip (-${skipPenaltySeconds}s)`}
           </Button>
         </div>
       </Card>
