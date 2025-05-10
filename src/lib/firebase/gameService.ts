@@ -818,7 +818,7 @@ export async function createGame(code: string): Promise<string> {
  * @param {object} settings - The settings object to update.
  * @returns {Promise<void>}
  */
-export async function updateGameSettings(gameId: string, settings: { wordCountPerPerson: number; roundLengthSeconds: number }) {
+export async function updateGameSettings(gameId: string, settings: { wordCountPerPerson: number; roundLengthSeconds: number; skipPenaltySeconds: number }) {
   const gameRef = doc(db, "games", gameId);
   await updateDoc(gameRef, { settings });
 }

@@ -17,6 +17,7 @@ export interface Game {
   settings?: {
     wordCountPerPerson: number;
     roundLengthSeconds: number;
+    skipPenaltySeconds: number; // Must be <= roundLengthSeconds
   };
   // Potentially add hostId if needed for specific controls
 }

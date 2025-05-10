@@ -14,16 +14,19 @@ interface LobbySettingsProps {
 const DEFAULT_SETTINGS = {
   wordCountPerPerson: 5,
   roundLengthSeconds: 60,
+  skipPenaltySeconds: 10,
 };
 
 export default function LobbySettings({ gameId, initialSettings, isHost }: LobbySettingsProps) {
   const [wordCount, setWordCount] = useState(initialSettings?.wordCountPerPerson ?? DEFAULT_SETTINGS.wordCountPerPerson);
   const [roundLength, setRoundLength] = useState(initialSettings?.roundLengthSeconds ?? DEFAULT_SETTINGS.roundLengthSeconds);
+  const [skipPenalty, setSkipPenalty] = useState(initialSettings?.skipPenaltySeconds ?? DEFAULT_SETTINGS.skipPenaltySeconds);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wordCountError, setWordCountError] = useState<string | null>(null);
   const [roundLengthError, setRoundLengthError] = useState<string | null>(null);
+  const [skipPenaltyError, setSkipPenaltyError] = useState<string | null>(null);
 
   if (!isHost) return null;
 
@@ -39,6 +42,13 @@ export default function LobbySettings({ gameId, initialSettings, isHost }: Lobby
     if (num < 10 || num > 300) return 'Must be between 10 and 300';
     return null;
   };
+  const validateSkipPenalty = (value: string) => {
+    const num = Number(value);
+    if (!/^[0-9]+$/.test(value) || isNaN(num)) return 'Enter a valid number';
+    if (num < 0) return 'Must be at least 0';
+    if (num > roundLength) return 'Cannot be greater than round length';
+    return null;
+  };
 
   const handleWordCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -49,6 +59,15 @@ export default function LobbySettings({ gameId, initialSettings, isHost }: Lobby
     const value = e.target.value;
     setRoundLength(Number(value));
     setRoundLengthError(validateRoundLength(value));
+    // If skip penalty is now greater than new round length, adjust it
+    if (skipPenalty > Number(value)) {
+      setSkipPenalty(Number(value));
+    }
+  };
+  const handleSkipPenaltyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSkipPenalty(Number(value));
+    setSkipPenaltyError(validateSkipPenalty(value));
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -57,14 +76,17 @@ export default function LobbySettings({ gameId, initialSettings, isHost }: Lobby
     setSuccess(false);
     const wcErr = validateWordCount(wordCount.toString());
     const rlErr = validateRoundLength(roundLength.toString());
+    const spErr = validateSkipPenalty(skipPenalty.toString());
     setWordCountError(wcErr);
     setRoundLengthError(rlErr);
-    if (wcErr || rlErr) return;
+    setSkipPenaltyError(spErr);
+    if (wcErr || rlErr || spErr) return;
     setSaving(true);
     try {
       await updateGameSettings(gameId, {
         wordCountPerPerson: wordCount,
         roundLengthSeconds: roundLength,
+        skipPenaltySeconds: skipPenalty,
       });
       setSuccess(true);
     } catch (err) {
@@ -101,6 +123,18 @@ export default function LobbySettings({ gameId, initialSettings, isHost }: Lobby
           onChange={handleRoundLengthChange}
           fullWidth
           error={roundLengthError || undefined}
+        />
+        <Input
+          label="Skip penalty (seconds)"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          type="text"
+          min={0}
+          max={roundLength}
+          value={skipPenalty}
+          onChange={handleSkipPenaltyChange}
+          fullWidth
+          error={skipPenaltyError || undefined}
         />
         <div className="flex gap-2 items-center">
           <Button type="submit" variant="primary" isLoading={saving} disabled={saving}>

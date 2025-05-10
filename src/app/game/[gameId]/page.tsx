@@ -396,8 +396,10 @@ export default function GamePage() {
       const now = Date.now();
       const currentTurnStart = game.turnStartTime || now;
       const currentTimeLeft = Math.max(0, roundLength - Math.floor((now - currentTurnStart) / 1000));
+      // Use skip penalty from settings (default 10)
+      const skipPenalty = game?.settings?.skipPenaltySeconds ?? 10;
       // If penalty would reduce time below 0, end the turn
-      if (currentTimeLeft <= 10) {
+      if (currentTimeLeft <= skipPenalty) {
         await advanceToNextTeam(gameId);
         setCurrentWord(null);
         toast.error("Time's up! Next team's turn.");
@@ -406,13 +408,13 @@ export default function GamePage() {
       // Get a new word for the current team's turn
       const word = await getRandomUnguessedWord(gameId, game.currentRound);
       setCurrentWord(word);
-      // Update turnStartTime to apply the 10-second penalty
+      // Update turnStartTime to apply the skip penalty
       const gameRef = doc(db, "games", gameId);
-      const newTurnStart = currentTurnStart - (10 * 1000); // Subtract 10 seconds from start time to reduce remaining time
+      const newTurnStart = currentTurnStart - (skipPenalty * 1000); // Subtract skipPenalty seconds
       await updateDoc(gameRef, {
         turnStartTime: newTurnStart
       });
-      toast.error("Word skipped! -10 seconds");
+      toast.error(`Word skipped! -${skipPenalty} seconds`);
     } catch (error) {
       console.error("Error handling skip:", error);
       toast.error("Failed to skip word");
@@ -515,6 +517,7 @@ export default function GamePage() {
                   isSkipProcessing={isSkipProcessing}
                   seconds={timeLeft}
                   totalSeconds={roundLength}
+                  skipPenaltySeconds={game?.settings?.skipPenaltySeconds ?? 10}
                 />
               </div>
             </div>
