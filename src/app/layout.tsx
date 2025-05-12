@@ -21,8 +21,27 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Squabbl - Family Word Game",
-  description: "A fun party word game for family and friends",
+  title: "Squabbl - The Digital Party Game",
+  description: "A fun and interactive digital adaptation of a popular party game.",
+  openGraph: {
+    title: "Squabbl",
+    description: "A fun and interactive digital adaptation of a popular party game.",
+    images: [
+      {
+        url: "/images/squabbl_logo.jpg",
+        width: 800,
+        height: 600,
+        alt: "Squabbl Logo",
+      },
+    ],
+    siteName: "Squabbl",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Squabbl",
+    description: "A fun and interactive digital adaptation of a popular party game.",
+    images: ["/images/squabbl_logo.jpg"],
+  },
 };
 
 export default function RootLayout({
