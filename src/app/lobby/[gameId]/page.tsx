@@ -504,17 +504,42 @@ export default function LobbyPage() {
                 <p className="text-base font-medium text-primary font-nunito">Share code: <span className="font-bold">{game?.code}</span></p>
               </div>
               <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    navigator.clipboard.writeText(shareableLink);
-                    toast.success('Link copied to clipboard!');
-                  }}
-                  leftIcon={<span>📋</span>}
-                  className="w-full md:w-auto"
-                >
-                  Copy Invite Link
-                </Button>
+                {/* Show Copy button if native share is NOT available */}
+                {!navigator.share && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      navigator.clipboard.writeText(shareableLink);
+                      toast.success('Link copied to clipboard!');
+                    }}
+                    leftIcon={<span>📋</span>}
+                    className="w-full md:w-auto"
+                  >
+                    Copy Invite Link
+                  </Button>
+                )}
+                {/* Show Share button if native share IS available */}
+                {navigator.share && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      try {
+                        navigator.share({
+                          title: game?.code ? `Join Squabbl Game ${game.code}` : 'Join Squabbl Game',
+                          text: 'Come join my Squabbl game!',
+                          url: shareableLink,
+                        });
+                      } catch (error) {
+                        console.error('Error sharing:', error);
+                        toast.error('Could not share link.');
+                      }
+                    }}
+                    leftIcon={<img src="/share.png" alt="Share" className="w-5 h-5" />}
+                    className="w-full md:w-auto"
+                  >
+                    Share Invite Link
+                  </Button>
+                )}
                 {isHost && (
                   <Button
                     variant="primary"

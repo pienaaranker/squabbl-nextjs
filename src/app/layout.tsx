@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: "A fun and interactive digital adaptation of a popular party game.",
     images: [
       {
-        url: "/images/squabbl_logo.jpg",
+        url: "/squabbl_logo.jpg",
         width: 800,
         height: 600,
         alt: "Squabbl Logo",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Squabbl",
     description: "A fun and interactive digital adaptation of a popular party game.",
-    images: ["/images/squabbl_logo.jpg"],
+    images: ["/squabbl_logo.jpg"],
   },
 };
 
