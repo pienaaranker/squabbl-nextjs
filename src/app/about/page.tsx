@@ -33,6 +33,14 @@ export default function AboutPage() {
         </div>
       </div>
 
+      {/* Squabbl Summary Section */}
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-8 mb-10 border-2 border-[#A8DADC] flex flex-col gap-4 mx-auto text-center">
+        <h2 className="text-2xl font-bold text-[#2F4F4F] mb-2 font-fredoka">What is Squabbl?</h2>
+        <p className="text-lg text-[#2F4F4F] font-nunito">
+          Squabbl is a lively party game where you team up with friends and family to guess words based on clues. Over three hilarious rounds—<span className="font-semibold" style={{ color: '#A8DADC' }}>describing</span>, <span className="font-semibold" style={{ color: '#B0EACD' }}>acting</span>, and <span className="font-semibold" style={{ color: '#FFD166' }}>one-word hints</span>—you'll race against the clock to score points and create some unforgettable moments.
+        </p>
+      </div>
+
       {/* Purpose/Mission Section */}
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-8 mb-10 border-2 border-[#EF798A] flex flex-col gap-4 mx-auto text-center">
         <h2 className="text-2xl font-bold text-[#2F4F4F] mb-2 font-fredoka">Our Purpose</h2>
@@ -57,7 +65,7 @@ export default function AboutPage() {
       {/* Call to Action */}
       <div className="flex flex-col items-center mt-4">
         <Link href="/" className="inline-flex items-center px-8 py-4 bg-[#EF798A] text-white font-bold rounded-xl hover:bg-[#e86476] transition-all duration-200 shadow-md hover:shadow-lg text-xl font-nunito">
-          <span className="mr-2">🚀</span> Get Started
+          Get Started
         </Link>
         <Link href="/" className="mt-3 text-[#2F4F4F] underline font-nunito text-md hover:text-[#A8DADC] transition-colors duration-200">
           Back to Home
