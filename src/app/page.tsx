@@ -269,8 +269,7 @@ export default function Home() {
         {showDonationButton && (
           <div className="mt-12 flex flex-col items-center text-center">
             <p className="text-[#2F4F4F] mb-4 font-nunito italic">
-              If I had to describe this game in one word, it would be "☕"<br />
-              <span className="text-sm">(That's charades for "Please fuel my coding caffeine addiction")</span>
+              If you like Squabbl, please consider buying me a coffee!
             </p>
             <a
               href="https://buymeacoffee.com/pienaaranker"
