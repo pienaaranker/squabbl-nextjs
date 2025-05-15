@@ -97,6 +97,22 @@ export default function Home() {
             <span className="text-[#B0EACD] font-semibold"> charades</span>, and
             <span className="text-[#FFD166] font-semibold"> one-word clues</span>!
           </p>
+          <div className="mt-4">
+            <a
+              href="/about"
+              className="text-[#2F4F4F] underline font-nunito text-md hover:text-[#A8DADC] transition-colors duration-200"
+            >
+              What is Squabbl?
+            </a>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <a
+              href="/how-to-play"
+              className="inline-flex items-center px-8 py-4 bg-[#EF798A] text-white font-bold rounded-xl hover:bg-[#e86476] transition-all duration-200 shadow-md hover:shadow-lg text-lg font-nunito"
+            >
+              How to Play
+            </a>
+          </div>
         </div>
 
         {/* Main Content with enhanced card styling */}

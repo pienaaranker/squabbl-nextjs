@@ -13,12 +13,21 @@ export default function Footer() {
           </Link>
 
           {/* Navigation */}
-          <Link 
-            href="/" 
-            className="text-sm text-neutral-dark hover:text-primary transition-colors hover:scale-105 transition-transform"
-          >
-            Back to Home
-          </Link>
+          <div className="flex items-center space-x-2">
+            <Link 
+              href="/" 
+              className="text-sm text-neutral-dark hover:text-primary transition-colors hover:scale-105 transition-transform"
+            >
+              Home
+            </Link>
+            <span className="text-neutral-dark">·</span>
+            <Link 
+              href="/about" 
+              className="text-sm text-neutral-dark hover:text-primary transition-colors hover:scale-105 transition-transform"
+            >
+              About
+            </Link>
+          </div>
 
           {/* Copyright */}
           <p className="text-sm text-neutral-dark">
