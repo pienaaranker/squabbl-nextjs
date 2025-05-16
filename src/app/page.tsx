@@ -1,5 +1,6 @@
 "use client"; // Required for useState and useRouter hooks
 
+// import type { Metadata } from 'next'; // Removed import for Metadata
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Removed Image import as it's not used in the new structure yet
@@ -7,6 +8,15 @@ import { useRouter } from "next/navigation";
 import { createNewGame, addHostToGame, findGameByCode } from "@/lib/firebase/gameService";
 import { isValidGameCode, formatGameCode } from "@/lib/utils/gameCode";
 import { getFeatureFlag } from "@/lib/firebase/featureService";
+
+// Removed page-specific metadata export as this is a Client Component
+// export const metadata: Metadata = {
+//   title: 'Squabbl - Play The Ultimate Party Word Game Online',
+//   description: 'Create or join Squabbl games online! Describe, act out, and guess words in three exciting rounds. Fun for teams and parties.',
+//   alternates: {
+//     canonical: 'https://www.yourdomain.com', // Replace with your actual domain
+//   },
+// };
 
 export default function Home() {
   const router = useRouter();
@@ -88,9 +98,12 @@ export default function Home() {
         <div className="text-center mb-12 relative">
           <img
             src="/squabbl_logo.png"
-            alt="Squabbl logo"
+            alt="Squabbl - The Ultimate Party Word Game Logo"
             className="mx-auto mb-4 max-w-full h-auto w-40 sm:w-60 md:w-80 lg:w-[500px]"
           />
+          <h1 className="text-3xl md:text-4xl font-bold text-[#2F4F4F] mb-4 font-fredoka">
+            Squabbl: The Ultimate Online Party Word Game
+          </h1>
           <p className="text-xl text-[#2F4F4F] max-w-2xl mx-auto font-nunito leading-relaxed">
             The ultimate party word game where teams compete through
             <span className="text-[#A8DADC] font-semibold"> description</span>,
