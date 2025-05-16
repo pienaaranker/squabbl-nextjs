@@ -101,9 +101,6 @@ export default function Home() {
             alt="Squabbl - The Ultimate Party Word Game Logo"
             className="mx-auto mb-4 max-w-full h-auto w-40 sm:w-60 md:w-80 lg:w-[500px]"
           />
-          <h1 className="text-3xl md:text-4xl font-bold text-[#2F4F4F] mb-4 font-fredoka">
-            Squabbl: The Ultimate Online Party Word Game
-          </h1>
           <p className="text-xl text-[#2F4F4F] max-w-2xl mx-auto font-nunito leading-relaxed">
             The ultimate party word game where teams compete through
             <span className="text-[#A8DADC] font-semibold"> description</span>,
