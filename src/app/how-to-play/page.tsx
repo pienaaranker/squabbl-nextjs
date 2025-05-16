@@ -1,4 +1,26 @@
+import type { Metadata } from 'next';
 import Link from "next/link";
+
+// Added page-specific metadata
+export const metadata: Metadata = {
+  title: 'How to Play Squabbl - Game Rules & Instructions',
+  description: 'Learn the rules of Squabbl! Detailed instructions on how to set up your game, play through the three exciting rounds (describe, act, one-word), and tips for a fantastic game night.',
+  alternates: {
+    canonical: 'https://www.squabbl.co.za/how-to-play', // Updated domain
+  },
+  openGraph: { 
+    title: 'Squabbl Game Instructions - Master the Rules!',
+    description: 'Your complete guide to playing Squabbl. Understand the setup, rounds, and tips to make your game night a blast.',
+    // images: [ // Optionally add a specific image for this page
+    //   {
+    //     url: 'https://www.squabbl.co.za/images/how-to-play-squabbl.jpg',
+    //     width: 1200,
+    //     height: 630,
+    //     alt: 'Illustration of Squabbl game rounds',
+    //   },
+    // ],
+  },
+};
 
 export default function HowToPlayPage() {
   return (

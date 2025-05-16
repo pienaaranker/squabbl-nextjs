@@ -1,4 +1,26 @@
+import type { Metadata } from 'next';
 import Link from "next/link";
+
+// Added page-specific metadata
+export const metadata: Metadata = {
+  title: 'About Squabbl - The Fun Online Party Word Game',
+  description: 'Learn more about Squabbl, the exciting online party game where teams describe, act, and guess words. Discover our mission to bring fun and laughter to your gatherings.',
+  alternates: {
+    canonical: 'https://www.squabbl.co.za/about', // Updated domain
+  },
+  openGraph: { 
+    title: 'About Squabbl - How Our Party Game Works',
+    description: 'Discover the story behind Squabbl and what makes our online word game a unique experience for friends and family.',
+    // images: [ // Optionally add a specific image for the about page
+    //   {
+    //     url: 'https://www.squabbl.co.za/images/about-squabbl-image.jpg',
+    //     width: 1200,
+    //     height: 630,
+    //     alt: 'Friends playing Squabbl',
+    //   },
+    // ],
+  },
+};
 
 export default function AboutPage() {
   return (

@@ -21,10 +21,14 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Squabbl - The Digital Party Game",
-  description: "A fun and interactive digital adaptation of a popular party game.",
+  metadataBase: new URL('https://www.squabbl.co.za'),
+  title: {
+    default: 'Squabbl - Play The Ultimate Party Word Game Online',
+    template: '%s | Squabbl - The Digital Party Game',
+  },
+  description: "Create or join Squabbl games online! Describe, act out, and guess words in three exciting rounds. Fun for teams and parties.",
   openGraph: {
-    title: "Squabbl",
+    title: "Squabbl - The Digital Party Game",
     description: "A fun and interactive digital adaptation of a popular party game.",
     images: [
       {
@@ -35,12 +39,24 @@ export const metadata: Metadata = {
       },
     ],
     siteName: "Squabbl",
+    url: 'https://www.squabbl.co.za',
   },
   twitter: {
     card: "summary_large_image",
-    title: "Squabbl",
+    title: "Squabbl - The Digital Party Game",
     description: "A fun and interactive digital adaptation of a popular party game.",
     images: ["/squabbl_logo.jpg"],
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
+      { url: '/squabbl_icon_64.png', type: 'image/png', sizes: '64x64' },
+      // Consider adding other common sizes e.g. 16x16, 32x32 if you have them
+    ],
+    apple: '/apple-touch-icon.png', // Example: add if you have an apple-touch-icon
+  },
+  alternates: {
+    canonical: '/',
   },
 };
 
@@ -52,7 +68,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${nunito.variable} ${poppins.variable}`}>
       <head>
-        <link rel="icon" href="/squabbl_icon_64.png" type="image/png" sizes="64x64" />
+        {/* The manual link for favicon will be removed by this edit as it's handled by the metadata object now */}
       </head>
       <body className="min-h-screen bg-background text-foreground flex flex-col font-nunito antialiased">
         <Toaster

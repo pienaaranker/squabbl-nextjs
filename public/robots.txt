@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Allow all user agents to crawl all content
+# You can add Disallow rules here for specific paths you don't want crawled
+# e.g., Disallow: /admin/
+
+Sitemap: https://www.squabbl.co.za/sitemap.xml 
